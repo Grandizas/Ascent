@@ -9,21 +9,18 @@ useHead({ title: 'Welcome' })
 
 const timeZone = useTimezone()
 const { firstName, load } = useProfile()
-const { addEntry, updateEntry } = useMoodEntries()
+const { entries, addEntry, updateEntry, syncError } = useMoodEntries()
 
 await useAsyncData('profile', () => load())
 
-const logged = ref<MoodEntry | null>(null)
+// Derived from the store, so a failed (rolled-back) save stops showing as logged.
+const loggedId = ref<string | null>(null)
+const logged = computed<MoodEntry | null>(() => entries.value.find(e => e.id === loggedId.value) ?? null)
 
 async function pick(level: MoodLevel) {
   const score = getMood(level).defaultScore
-  if (logged.value) {
-    logged.value = { ...logged.value, level, score }
-    await updateEntry(logged.value.id, { level, score })
-  }
-  else {
-    logged.value = await addEntry({ level, score })
-  }
+  if (logged.value) await updateEntry(logged.value.id, { level, score })
+  else loggedId.value = (await addEntry({ level, score })).id
 }
 
 const title = computed(() => `How do you feel right now${firstName.value ? `, ${firstName.value}` : ''}?`)
@@ -43,6 +40,14 @@ const title = computed(() => `How do you feel right now${firstName.value ? `, ${
       :selected="logged?.level"
       @pick="pick"
     />
+
+    <p
+      v-if="syncError"
+      class="auth-form__error"
+      role="alert"
+    >
+      {{ syncError }}
+    </p>
 
     <div
       v-if="logged"

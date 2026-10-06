@@ -1,7 +1,7 @@
 // The only file that imports Font Awesome icon packages.
 // Components refer to icons by these semantic names via <AppIcon name="…" />.
 // Pro Light matches the design's thin 1.5px line work. Pro packages install
-// from the Font Awesome registry (see .npmrc.example); add another style
+// from the Font Awesome registry (see .npmrc); add another style
 // package here only when an icon needs it.
 import {
   faArrowLeft,

@@ -9,18 +9,29 @@ const route = useRoute()
 const session = useSupabaseSession()
 const failed = ref(Boolean(route.query.error || route.query.error_description))
 
+const goNext = () => navigateTo(safeNext(route.query.next), { replace: true })
+let timer: ReturnType<typeof setTimeout> | undefined
+
 onMounted(() => {
   if (failed.value) return
-  // The Supabase client exchanges the link's code for a session on load.
+  // The Supabase client exchanges the link's code for a session on load;
+  // usually that has already happened by the time this page mounts.
+  if (session.value) {
+    goNext()
+    return
+  }
   const stop = watch(session, (value) => {
     if (!value) return
     stop()
-    navigateTo(safeNext(route.query.next), { replace: true })
-  }, { immediate: true })
-  setTimeout(() => {
+    failed.value = false // a slow callback can still succeed after the timeout
+    goNext()
+  })
+  timer = setTimeout(() => {
     if (!session.value) failed.value = true
   }, 8000)
 })
+
+onBeforeUnmount(() => clearTimeout(timer))
 </script>
 
 <template>

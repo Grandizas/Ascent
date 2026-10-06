@@ -8,9 +8,27 @@ export interface AuthResult {
   error: string | null
 }
 
+const GENERIC_ERROR = 'Something went wrong. Try again in a moment.'
+
+/**
+ * Runs an auth call and turns anything it throws (as opposed to the AuthError
+ * Supabase returns) into the generic message, so callers never get a rejected
+ * promise and their loading state always resets.
+ */
+async function guarded<T extends AuthResult>(run: () => Promise<T>, fallback: Omit<T, 'error'>): Promise<T> {
+  try {
+    return await run()
+  }
+  catch (error) {
+    console.error('[auth] unexpected failure', error)
+    return { ...fallback, error: GENERIC_ERROR } as T
+  }
+}
+
 /**
  * Supabase Auth actions used by the auth pages and the shell. Errors are
  * mapped to the product's tone; raw Supabase messages never reach the UI.
+ * None of the actions reject.
  */
 export function useAuth() {
   const supabase = useSupabaseClient()
@@ -19,48 +37,62 @@ export function useAuth() {
   /** Where the email / OAuth link lands; `next` must be an in-app path. */
   const callbackUrl = (next: string) => `${origin()}/confirm?next=${encodeURIComponent(safeNext(next))}`
 
-  async function signIn(email: string, password: string): Promise<AuthResult> {
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
-    return { error: error && describe(error, 'sign-in') }
+  function signIn(email: string, password: string): Promise<AuthResult> {
+    return guarded(async () => {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      return { error: error && describe(error, 'sign-in') }
+    }, {})
   }
 
   /** `needsConfirmation` is true when the project requires email confirmation first. */
-  async function signUp(input: { name: string, email: string, password: string }): Promise<AuthResult & { needsConfirmation: boolean }> {
-    const { data, error } = await supabase.auth.signUp({
-      email: input.email.trim(),
-      password: input.password,
-      options: {
-        emailRedirectTo: callbackUrl('/welcome'),
-        // Read by the handle_new_user trigger to create the profile.
-        data: {
-          display_name: input.name.trim(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  function signUp(input: { name: string, email: string, password: string }): Promise<AuthResult & { needsConfirmation: boolean }> {
+    return guarded(async () => {
+      const { data, error } = await supabase.auth.signUp({
+        email: input.email.trim(),
+        password: input.password,
+        options: {
+          emailRedirectTo: callbackUrl('/welcome'),
+          // Read by the handle_new_user trigger to create the profile.
+          data: {
+            display_name: input.name.trim(),
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
         },
-      },
-    })
-    return { error: error && describe(error, 'sign-up'), needsConfirmation: !error && !data.session }
+      })
+      return { error: error && describe(error, 'sign-up'), needsConfirmation: !error && !data.session }
+    }, { needsConfirmation: false })
   }
 
-  async function signInWithProvider(provider: OAuthProvider, next: string): Promise<AuthResult> {
-    const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: callbackUrl(next) } })
-    return { error: error && describe(error, 'oauth') }
+  function signInWithProvider(provider: OAuthProvider, next: string): Promise<AuthResult> {
+    return guarded(async () => {
+      const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: callbackUrl(next) } })
+      return { error: error && describe(error, 'oauth') }
+    }, {})
   }
 
   /** Always "succeeds" unless rate-limited, so the page never reveals whether an account exists. */
-  async function requestPasswordReset(email: string): Promise<AuthResult> {
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${origin()}/reset-password` })
-    return { error: error && isRateLimit(error) ? describe(error, 'reset') : null }
+  function requestPasswordReset(email: string): Promise<AuthResult> {
+    return guarded(async () => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${origin()}/reset-password` })
+      return { error: error && isRateLimit(error) ? describe(error, 'reset') : null }
+    }, {})
   }
 
-  async function updatePassword(password: string): Promise<AuthResult> {
-    const { error } = await supabase.auth.updateUser({ password })
-    return { error: error && describe(error, 'update-password') }
+  function updatePassword(password: string): Promise<AuthResult> {
+    return guarded(async () => {
+      const { error } = await supabase.auth.updateUser({ password })
+      return { error: error && describe(error, 'update-password') }
+    }, {})
   }
 
   /** Signs out and reloads, so no previous user's data stays in memory. */
   async function signOut() {
-    await supabase.auth.signOut()
-    await reloadNuxtApp({ path: '/login', force: true })
+    try {
+      await supabase.auth.signOut()
+    }
+    finally {
+      await reloadNuxtApp({ path: '/login', force: true })
+    }
   }
 
   return { signIn, signUp, signInWithProvider, requestPasswordReset, updatePassword, signOut }
@@ -94,5 +126,5 @@ function describe(error: AuthError, action: 'sign-in' | 'sign-up' | 'oauth' | 'r
       return 'This link has expired. Request a new one.'
   }
   if (action === 'oauth') return 'That sign-in option isn’t available right now. Use your email instead.'
-  return 'Something went wrong. Try again in a moment.'
+  return GENERIC_ERROR
 }

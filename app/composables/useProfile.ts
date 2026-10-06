@@ -52,7 +52,7 @@ export function useProfile() {
   const memberSinceLabel = computed(() => {
     if (!profile.value) return ''
     const date = new Date(profile.value.createdAt)
-    return `Since ${date.toLocaleString('en-GB', { month: 'short', timeZone: profile.value.timezone })} ${date.getFullYear()}`
+    return `Since ${date.toLocaleString('en-GB', { month: 'short', year: 'numeric', timeZone: profile.value.timezone })}`
   })
 
   return { profile, load, update, displayName, firstName, initials, memberSinceLabel }

@@ -219,7 +219,7 @@ supabase/
   ```
 - **`AppIcon` component:** takes `name: keyof typeof icons`. Switching to Pro later means changing the imports in `icons.ts`; nothing else changes.
 - **Pro later:**
-  - An `.npmrc` entry `@fortawesome:registry=https://npm.fontawesome.com/` with `//npm.fontawesome.com/:_authToken=${FONTAWESOME_PACKAGE_TOKEN}`, where the token is an env var. Locally it lives in user-level config; on Vercel it is a project env var.
+  - An `.npmrc` entry `@fortawesome:registry=https://npm.fontawesome.com/` with `//npm.fontawesome.com/:_authToken=${FONT_AWESOME_TOKEN}`, where the token is an env var. Locally it lives in user-level config; on Vercel it is a project env var.
   - We add this `.npmrc` only when Pro is enabled. **No token is ever committed.**
 - **Design fidelity rule:** the design deliberately draws some glyphs in CSS. Those are brand and data-visualization marks, not interface icons, so they stay CSS:
   - the brand mark
@@ -235,7 +235,7 @@ supabase/
 - **`.env.example`** (committed, no values):
   - `NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY` (anon / publishable)
   - Later: `ANTHROPIC_API_KEY` (server only)
-  - Later: `FONTAWESOME_PACKAGE_TOKEN`, used only for install
+  - `FONT_AWESOME_TOKEN`, used only by npm at install time (shell / Vercel env, not `.env`)
 - **Service-role key:** never used in the browser. If a server route ever needs it, it lives in a server-only `runtimeConfig` key.
 
 ---
@@ -364,7 +364,7 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - **Nuxt is pinned to `4.5.2`.** 4.6.0 fails every SSR request with "Either manifest or precomputed data must be provided"; a clean, untouched scaffold fails the same way. Re-test before upgrading.
 - [x] `sass` with tokens/breakpoints/mixins injected through `additionalData`, and the `_style.scss` entry.
 - [x] `@nuxt/fonts` self-hosts the four families with the exact weights and styles the design loads (Newsreader upright 300 included, see §8 #6).
-- [x] Font Awesome: `utils/icons.ts` (the only FA import site), `AppIcon` and a plugin. `.npmrc.example` holds the Pro registry config, with the token read from the environment.
+- [x] Font Awesome: `utils/icons.ts` (the only FA import site), `AppIcon` and a plugin. The committed `.npmrc` holds the Pro registry config; the token comes from the `FONT_AWESOME_TOKEN` environment variable (Windows user env locally, Vercel project env in deploys).
 - [x] `.env.example` (`NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY`). `.env*` is gitignored.
 - [x] `@nuxtjs/supabase` is installed. It registers itself only when those env vars exist, with redirect off; until then the app runs without it.
 - [x] `nuxt build` succeeds. Locally it uses the `node-server` preset; on Vercel, Nitro switches to the Vercel preset automatically.

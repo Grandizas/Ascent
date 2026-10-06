@@ -18,17 +18,25 @@ const toEntry = (row: Row): MoodEntry => ({
 
 const byLoggedAt = (a: MoodEntry, b: MoodEntry) => a.loggedAt.localeCompare(b.loggedAt)
 
-// Per-entry write queues and debounced patches. Module scope is fine: they
-// only exist in the browser, where there is one user per page load.
-const queues = new Map<string, Promise<unknown>>()
-const pending = new Map<string, { patch: MoodEntryPatch, before: MoodEntry, timer: ReturnType<typeof setTimeout> }>()
+// Write bookkeeping. Module scope is fine: mutations only run in the browser,
+// where there is one user per page load (sign-out reloads the app).
+/** Per-entry write chains, so writes for one entry reach the database in order. */
+const queues = new Map<string, Promise<void>>()
+/** Debounced patches (note typing) not yet sent. */
+const pending = new Map<string, { patch: MoodEntryPatch, timer: ReturnType<typeof setTimeout> }>()
+/** Last state the database confirmed per entry; null = not in the database. */
+const confirmed = new Map<string, MoodEntry | null>()
+/** Entries with a failed write since their queue last drained. */
+const failed = new Set<string>()
 
 /**
  * The user's mood entries (shared state) and the mutations on them.
  *
  * Mutations are optimistic: state changes immediately and the write is queued
- * per entry, so an update can never reach the database before its insert. If
- * a write fails, that change is rolled back and `syncError` is set.
+ * per entry, so an update can never reach the database before its insert.
+ * When an entry's queue drains after a failure, the entry is rebuilt from the
+ * last confirmed database state (plus any unsent note edit) and `syncError`
+ * is set — so several failed writes in a row can't leave a stale value behind.
  */
 export function useMoodEntries() {
   const supabase = useSupabaseClient()
@@ -39,22 +47,52 @@ export function useMoodEntries() {
     entries.value = next.sort(byLoggedAt)
   }
 
-  function enqueue(id: string, write: () => PromiseLike<{ error: unknown }>, rollback: () => void) {
+  /** Seeds the confirmed state the first time an entry is written in this session. */
+  function seed(id: string, current: MoodEntry | null) {
+    if (!confirmed.has(id)) confirmed.set(id, current && { ...current })
+  }
+
+  function reconcile(id: string) {
+    const base = confirmed.get(id)
+    const others = entries.value.filter(e => e.id !== id)
+    if (!base) {
+      const job = pending.get(id)
+      if (job) clearTimeout(job.timer)
+      pending.delete(id)
+      setEntries(others)
+      return
+    }
+    setEntries([...others, { ...base, ...pending.get(id)?.patch }])
+  }
+
+  function enqueue(id: string, write: () => PromiseLike<{ error: unknown }>, onSaved: () => void): Promise<void> {
     const run = (queues.get(id) ?? Promise.resolve()).then(async () => {
       const { error } = await write()
       if (error) {
         console.error('[mood-entries] write failed', error)
-        rollback()
+        failed.add(id)
         syncError.value = 'Couldn’t save that change. Check your connection and try again.'
+      }
+      else {
+        onSaved()
       }
     })
     queues.set(id, run)
-    run.finally(() => queues.get(id) === run && queues.delete(id))
-    return run
+    return run.finally(() => {
+      if (queues.get(id) !== run) return // more writes queued; reconcile after the last
+      queues.delete(id)
+      if (failed.delete(id)) reconcile(id)
+    })
   }
 
-  /** Load the last `days` days (in `timeZone`), replacing what's in state. */
+  /**
+   * Load the last `days` days (in `timeZone`), replacing what's in state.
+   * Unsent and in-flight writes finish first, so nothing optimistic is lost.
+   */
   async function loadRecent(timeZone: string, days = 31): Promise<void> {
+    await Promise.all([...pending.keys()].map(id => flush(id)))
+    await Promise.allSettled([...queues.values()])
+
     const from = zonedDate(addDays(dayKey(Date.now(), timeZone), -(days - 1)), 0, timeZone)
     const { data, error } = await supabase
       .from('mood_entries')
@@ -62,7 +100,13 @@ export function useMoodEntries() {
       .gte('logged_at', from.toISOString())
       .order('logged_at')
     if (error) throw error
-    setEntries((data ?? []).map(toEntry))
+    const loaded = (data ?? []).map(toEntry)
+    if (!import.meta.server) loaded.forEach(entry => confirmed.set(entry.id, { ...entry }))
+
+    // Anything written while the query ran keeps its local (newer) version.
+    const busy = (id: string) => queues.has(id) || pending.has(id)
+    const local = entries.value.filter(e => busy(e.id))
+    setEntries([...loaded.filter(e => !busy(e.id)), ...local])
   }
 
   /** Adds an entry stamped now (or `loggedAt`); returns it immediately, saving in the background. */
@@ -77,6 +121,7 @@ export function useMoodEntries() {
     }
     setEntries([...entries.value, entry])
     syncError.value = null
+    confirmed.set(entry.id, null)
 
     enqueue(
       entry.id,
@@ -86,29 +131,35 @@ export function useMoodEntries() {
         level: entry.level,
         score: entry.score,
       }),
-      () => setEntries(entries.value.filter(e => e.id !== entry.id)),
+      () => confirmed.set(entry.id, { ...entry }),
     )
     return entry
   }
 
-  function applyLocally(id: string, patch: MoodEntryPatch) {
+  /** Applies a patch to state; returns the entry as it was, or null if unknown. */
+  function applyLocally(id: string, patch: MoodEntryPatch): MoodEntry | null {
     const before = entries.value.find(e => e.id === id)
     if (!before) return null
     setEntries(entries.value.map(e => (e.id === id ? { ...e, ...patch } : e)))
     return before
   }
 
-  function persistPatch(id: string, patch: MoodEntryPatch, before: MoodEntry) {
+  function persistPatch(id: string, patch: MoodEntryPatch) {
     return enqueue(
       id,
       () => supabase.from('mood_entries').update(patch).eq('id', id),
-      () => setEntries(entries.value.map(e => (e.id === id ? { ...e, ...pick(before, patch) } : e))),
+      () => {
+        const base = confirmed.get(id)
+        if (base) confirmed.set(id, { ...base, ...patch })
+      },
     )
   }
 
   async function updateEntry(id: string, patch: MoodEntryPatch): Promise<void> {
     const before = applyLocally(id, patch)
-    if (before) await persistPatch(id, patch, before)
+    if (!before) return
+    seed(id, before)
+    await persistPatch(id, patch)
   }
 
   /**
@@ -118,12 +169,11 @@ export function useMoodEntries() {
   function updateEntrySoon(id: string, patch: MoodEntryPatch, delay = 600): void {
     const before = applyLocally(id, patch)
     if (!before) return
+    seed(id, before)
     const existing = pending.get(id)
     if (existing) clearTimeout(existing.timer)
     pending.set(id, {
       patch: { ...existing?.patch, ...patch },
-      // Roll back to the state before the first of the merged edits.
-      before: existing?.before ?? before,
       timer: setTimeout(() => flush(id), delay),
     })
   }
@@ -134,7 +184,7 @@ export function useMoodEntries() {
     if (!job) return
     clearTimeout(job.timer)
     pending.delete(id)
-    await persistPatch(id, job.patch, job.before)
+    await persistPatch(id, job.patch)
   }
 
   async function removeEntry(id: string): Promise<void> {
@@ -145,11 +195,12 @@ export function useMoodEntries() {
     }
     const before = entries.value.find(e => e.id === id)
     if (!before) return
+    seed(id, before)
     setEntries(entries.value.filter(e => e.id !== id))
     await enqueue(
       id,
       () => supabase.from('mood_entries').delete().eq('id', id),
-      () => setEntries([...entries.value, before]),
+      () => confirmed.set(id, null),
     )
   }
 
@@ -165,8 +216,4 @@ export function useMoodEntries() {
     flush,
     removeEntry,
   }
-}
-
-function pick(entry: MoodEntry, patch: MoodEntryPatch): MoodEntryPatch {
-  return Object.fromEntries(Object.keys(patch).map(k => [k, entry[k as keyof MoodEntryPatch]]))
 }
