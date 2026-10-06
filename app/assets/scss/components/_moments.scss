@@ -1,0 +1,86 @@
+@use '../abstracts' as *;
+
+// ── Moment row: time · mood · note/tags · score ───────────────────────
+.moment-row {
+  display: grid;
+  grid-template-columns: 48px 88px minmax(0, 1fr) 40px;
+  align-items: baseline;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid $line-subtle;
+}
+
+.moment-row__time,
+.moment-row__score {
+  font-family: $font-mono;
+  font-size: 12.5px;
+  color: $color-text-subtle;
+}
+
+.moment-row__score {
+  text-align: right;
+}
+
+.moment-row__mood {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.moment-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.moment-row__note {
+  font-size: 14px;
+  color: $color-text-secondary;
+  text-wrap: pretty;
+}
+
+.moment-row__tags {
+  font-size: 12px;
+  color: $color-text-dimmer;
+}
+
+// ── Observation: hollow diamond, sentence, caveat ─────────────────────
+.observation {
+  display: flex;
+  gap: 14px;
+}
+
+.observation__marker {
+  margin-top: 7px;
+}
+
+.observation__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.observation__body {
+  max-width: 68ch;
+  font-size: 14px;
+  color: $color-text-secondary;
+  text-wrap: pretty;
+}
+
+.observation__caption {
+  font-size: 12px;
+  color: $color-text-dimmer;
+}
+
+// ── Quiet text link ("Open timeline →") ───────────────────────────────
+.text-link {
+  font-size: 12.5px;
+  color: $color-text-subtle;
+  transition: color $duration-base;
+
+  &:hover {
+    color: $color-text;
+  }
+}

@@ -18,3 +18,9 @@
 @use 'components/chip';
 @use 'components/headers';
 @use 'components/markers';
+@use 'components/mood-picker';
+@use 'components/mood-log';
+@use 'components/day-chart';
+@use 'components/moments';
+
+@use 'pages/today';

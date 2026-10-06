@@ -48,6 +48,7 @@
   }
 
   .page-header__actions {
+    flex-wrap: nowrap;
     gap: 16px;
   }
 }

@@ -5,7 +5,8 @@ export type HotkeyHandler = (event: KeyboardEvent) => void
  *
  * Keys are matched case-insensitively (`'t'` also fires for `T`). Prefix with
  * `shift+` to require Shift (`'shift+q'`); a `shift+` binding wins over the plain one.
- * Shortcuts are ignored while typing in a field and when Ctrl/Cmd/Alt is held,
+ * Prefix with `mod+` for Cmd (macOS) / Ctrl (`'mod+k'`); these also fire while typing.
+ * Other shortcuts are ignored while typing in a field and when Ctrl/Cmd/Alt is held,
  * except `Escape`, which always fires.
  *
  * Registered on mount, removed on unmount.
@@ -17,6 +18,15 @@ export function useHotkeys(bindings: Record<string, HotkeyHandler>) {
     if (event.defaultPrevented || event.isComposing) return
 
     const key = event.key.toLowerCase()
+
+    if (event.metaKey || event.ctrlKey) {
+      const modHandler = map.get(`mod+${key}`)
+      if (modHandler && !event.altKey) {
+        modHandler(event)
+        return
+      }
+    }
+
     if (key !== 'escape') {
       if (event.metaKey || event.ctrlKey || event.altKey) return
       if (isEditable(event.target)) return
