@@ -70,11 +70,14 @@ export function useAuth() {
     }, {})
   }
 
-  /** Always "succeeds" unless rate-limited, so the page never reveals whether an account exists. */
+  /**
+   * Supabase already answers "ok" for unknown addresses, so reporting real
+   * failures (rate limits, email delivery) doesn't reveal whether an account exists.
+   */
   function requestPasswordReset(email: string): Promise<AuthResult> {
     return guarded(async () => {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${origin()}/reset-password` })
-      return { error: error && isRateLimit(error) ? describe(error, 'reset') : null }
+      return { error: error && describe(error, 'reset') }
     }, {})
   }
 
@@ -85,14 +88,40 @@ export function useAuth() {
     }, {})
   }
 
-  /** Signs out and reloads, so no previous user's data stays in memory. */
-  async function signOut() {
+  /** True once this browser no longer holds a session. */
+  async function sessionCleared(): Promise<boolean> {
     try {
-      await supabase.auth.signOut()
+      const { data } = await supabase.auth.getSession()
+      return !data.session
     }
-    finally {
-      await reloadNuxtApp({ path: '/login', force: true })
+    catch {
+      return false
     }
+  }
+
+  /**
+   * Signs out everywhere; if that fails, at least signs this browser out (local
+   * scope needs no network). Reloads to /login only once the session is
+   * confirmed gone, so no previous user's data stays in memory.
+   */
+  async function signOut(): Promise<AuthResult> {
+    for (const scope of ['global', 'local'] as const) {
+      try {
+        const { error } = await supabase.auth.signOut({ scope })
+        if (error) console.error(`[auth] sign-out (${scope}) failed`, error)
+      }
+      catch (error) {
+        console.error(`[auth] sign-out (${scope}) threw`, error)
+      }
+      if (await sessionCleared()) {
+        await reloadNuxtApp({ path: '/login', force: true })
+        return { error: null }
+      }
+    }
+    // Rare (e.g. browser storage blocked). Nothing in the design covers this, so tell the user plainly.
+    const error = 'Couldn’t sign out. Reload the page and try again.'
+    window.alert(error)
+    return { error }
   }
 
   return { signIn, signUp, signInWithProvider, requestPasswordReset, updatePassword, signOut }
@@ -126,5 +155,6 @@ function describe(error: AuthError, action: 'sign-in' | 'sign-up' | 'oauth' | 'r
       return 'This link has expired. Request a new one.'
   }
   if (action === 'oauth') return 'That sign-in option isn’t available right now. Use your email instead.'
+  if (action === 'reset') return 'We couldn’t send the reset email. Try again in a moment.'
   return GENERIC_ERROR
 }
