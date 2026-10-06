@@ -24,3 +24,16 @@ export function smoothPath(points: readonly Point[]): string {
 
   return d
 }
+
+/**
+ * Vertical position for a 1–10 score in a chart `height` units tall, leaving
+ * `inset` above 10 and below 1 (design: 220 → 20…200, 280 → 20…260).
+ */
+export function scoreToY(score: number, height: number, inset = 20): number {
+  return inset + ((10 - score) / 9) * (height - 2 * inset)
+}
+
+/** Position (0–1) of a time of day on a 06:00–24:00 axis, clamped. */
+export function dayAxisPosition(minuteOfDay: number): number {
+  return Math.min(1, Math.max(0, (minuteOfDay - 360) / 1080))
+}

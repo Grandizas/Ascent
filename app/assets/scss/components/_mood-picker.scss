@@ -1,0 +1,110 @@
+@use '../abstracts' as *;
+
+// Five mood tiles; `--mood` is set per tile.
+.mood-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 8px;
+
+  @include respond-to(mobile) {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.mood-picker__tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 104px;
+  padding: 12px 14px 14px;
+  background: $color-surface-raised;
+  border: 1px solid $line;
+  border-radius: $radius-md;
+  color: $color-text;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color $duration-base, border-color $duration-base, transform 0.08s;
+
+  &.is-selected {
+    background: color-mix(in oklch, var(--mood) 9%, transparent);
+    border-color: color-mix(in oklch, var(--mood) 70%, transparent);
+  }
+
+  &:hover {
+    background: $color-surface-hover;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  @include respond-to(mobile) {
+    height: 78px;
+    padding: 10px 8px;
+  }
+}
+
+.mood-picker__pulse {
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--mood);
+  border-radius: $radius-md;
+  pointer-events: none;
+  animation: bl-ring 0.7s ease-out forwards;
+}
+
+.mood-picker__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.mood-picker__key {
+  font-family: $font-mono;
+  font-size: 11px;
+  color: $color-text-dim;
+}
+
+.mood-picker__ticks {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+
+  @include respond-to(mobile) {
+    display: none;
+  }
+}
+
+.mood-picker__tick {
+  width: 3px;
+  border-radius: 1px;
+  background: $fill-selected;
+
+  @for $i from 1 through 5 {
+    &:nth-child(#{$i}) {
+      height: 4px + $i * 2px;
+    }
+  }
+
+  &.is-filled {
+    background: var(--mood);
+  }
+}
+
+.mood-picker__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mood-picker__label {
+  font-size: 17px;
+  letter-spacing: -0.01em;
+
+  @include respond-to(mobile) {
+    font-size: 13px;
+  }
+}

@@ -384,12 +384,28 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - Sidebar, page header, primary button, segmented control, mobile top bar and tab bar all match the measured positions and sizes to within 0.5px.
 - **Design note: box-sizing.** The design files set no `box-sizing`. `<a>` elements and text inputs with a declared height and a border are therefore 2px taller than declared; `<button>`s are not (browsers default them to border-box). We use border-box globally, so those cases declare the rendered height. Example: the mobile sign-out pill is 30px.
 
-### Phase 2: Today (UI with typed fixtures)
-- [ ] `MoodPicker`, `MoodLogPanel` (intensity, tags, note, Undo/Done, Esc/Enter), keys `1–5` and `N`, and the pulse and ring animations.
-- [ ] `MoodLineChart` base and `DayMoodChart`: gradient line, area, gridlines, yesterday dashed toggle, NOW marker and future shade, hover tooltip, cravings lane.
-- [ ] Today stats (average, range, check-ins, 30-day average), observation row, recent moments, header (greeting by time of day, last check-in).
-- [ ] Data flows through `useMoodEntries`, backed temporarily by in-memory fixtures that have the **final** `MoodEntry` shape.
-- **Not in this phase:** ⌘K search behaviour (we render the button only; see Q5).
+### Phase 2: Today ✅
+- [x] **Logging:** `MoodLogCard` holds `MoodPicker` (pulse ring on pick) and `MoodLogPanel`, which contains `IntensityScale`, `TagPicker` and the note.
+  - Logging flow (`useMoodLog`): pick a mood (tap or `1`–`5`) to create an entry stamped "now". Picking again while it's open changes that same entry.
+  - Undo deletes the entry. Done, `Esc` or `Enter` in the note closes the panel. `N` focuses the note, logging Neutral first if nothing is open.
+- [x] **Chart:** `DayMoodChart` has the mood-gradient line, area fill, gridlines, dashed yesterday line (toggle), NOW marker with the future shaded, and the fresh-point ring.
+  - Points are focusable buttons that show `ChartTooltip`.
+  - The cravings lane is a generic `ChartLane` (tag, label); Today passes the nicotine lane as a constant until phase 6.
+- [x] **Page:** `TodayHeader` (dayline, greeting, last check-in, "Search entries ⌘K", which opens `/journal` per Q5), `TodayMood` (average, range, check-ins, 30-day average, `ObservationItem`) and `RecentMoments` (`MomentRow`).
+- [x] **Data:** `useMoodEntries` (async add/update/remove, applied immediately in memory) runs on `fixtures/mood.ts`, built relative to the real "today". The `MoodEntry` type matches the planned table.
+  - The observation text is a fixture until phase 8.
+- [x] **Time:** `useTimezone` reads a `tz` cookie, so the server renders in the user's zone. `plugins/timezone.client.ts` sets the cookie and reloads once on first visit.
+  - `utils/date.ts` handles zoned day keys, minutes, DST and formatting, with tests. `useNow` ticks every 20 s.
+- [x] **Small additions:**
+  - `useHotkeys` supports `mod+` bindings (⌘K / Ctrl+K).
+  - Components are registered without folder prefixes, so names must be unique.
+  - `utils/chart.ts` gained `scoreToY` and `dayAxisPosition`.
+- **Verified** against the running design at 1280px and 375px.
+  - Header, card, tiles, open panel (intensity, chips, note), chart box, axes, lane, observation and moment rows match to within 0.5px.
+  - All interactions were exercised: keys, Undo, Done, Esc, Enter, note and tooltip. There are no hydration warnings.
+- **Deferred:**
+  - A generic `MoodLineChart` base will be extracted in phase 4, once Timeline gives a second real use. Today's chart already uses the shared `smoothPath` and `scoreToY` helpers and the shared tooltip.
+  - Note edits should be debounced when Supabase lands.
 
 ### Phase 3: Supabase, auth and real mood data
 - [ ] Migrations 1–2, RLS, profile trigger, default tags, generated types.
@@ -476,6 +492,8 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 | 9 | Today v1 tower. | Not implemented (superseded). |
 | 10 | Selected chip background is warm .1 on Today and .08 on Journal. | One chip style, using Today's .1 value. |
 | 11 | Only the first active journey's dot glows in the sidebar. | Kept: the glow marks the first journey in the list. |
+| 12 | "Open timeline →" and "Journal →" links have no hover state in the design. | They brighten to `#ECEAE5` on hover, as other quiet controls do. |
+| 13 | Several design elements are content-box (chart dots, tooltip 260 + padding, lane 22 + border). | Kept at the design's rendered size; content-box is used locally where that's clearer. |
 
 ---
 

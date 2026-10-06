@@ -21,10 +21,10 @@ export default defineNuxtConfig({
     ...(hasSupabase ? [['@nuxtjs/supabase', { redirect: false, types: false }] as [string, object]] : []),
   ],
 
+  // Folders organise components but don't prefix their names (<DayMoodChart>, not <ChartsDayMoodChart>).
+  // Component names must therefore be unique across folders.
   components: [
-    // Generic primitives are used everywhere, so they skip the folder prefix (<BaseButton>, not <UiBaseButton>).
-    { path: '~/components/ui', pathPrefix: false },
-    '~/components',
+    { path: '~/components', pathPrefix: false },
   ],
 
   devtools: { enabled: true },

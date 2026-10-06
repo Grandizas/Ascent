@@ -1,0 +1,234 @@
+@use '../abstracts' as *;
+
+// Mood through one day (06:00–24:00). The SVG is stretched to the plot box;
+// points, labels and the NOW marker are HTML overlays positioned in %.
+.day-chart {
+  position: relative;
+  padding-left: 26px;
+}
+
+.day-chart__y {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 220px;
+  font-family: $font-mono;
+  font-size: 10.5px;
+  color: $color-text-axis;
+
+  span {
+    position: absolute;
+    transform: translateY(-50%);
+  }
+}
+
+.day-chart__plot {
+  position: relative;
+  height: 220px;
+}
+
+.day-chart__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+
+  line,
+  path {
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.day-chart__grid {
+  stroke: $line-subtle;
+}
+
+.day-chart__future {
+  fill: rgba(255, 255, 255, 0.012);
+}
+
+.day-chart__comparison {
+  fill: none;
+  stroke: $line-hover;
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.day-chart__area-stop {
+  stop-color: oklch(0.8 0.08 75);
+  stop-opacity: 0;
+}
+
+.day-chart__area-stop--top {
+  stop-opacity: 0.1;
+}
+
+.day-chart__line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: d 0.5s ease;
+}
+
+.day-chart__now {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed rgba(255, 255, 255, 0.18);
+}
+
+.day-chart__now-label {
+  position: absolute;
+  top: -2px;
+  left: 6px;
+  font-family: $font-mono;
+  font-size: 10.5px;
+  color: $color-text-subtle;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.day-chart__point {
+  @include button-reset;
+
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// Sizes are the design's content-box values (dot + 2px halo border).
+.day-chart__dot {
+  box-sizing: content-box;
+  width: 9px;
+  height: 9px;
+  border: 2px solid $color-bg;
+  border-radius: 50%;
+  background: var(--mood);
+  box-shadow: 0 0 0 1px var(--mood);
+  transition: all $duration-base;
+
+  .is-hovered > & {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.day-chart__ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: content-box;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--mood);
+  border-radius: 50%;
+  animation: bl-dot 1s ease-out forwards;
+}
+
+.day-chart__x {
+  position: relative;
+  height: 18px;
+  margin-top: 8px;
+  font-family: $font-mono;
+  font-size: 10.5px;
+  color: $color-text-axis;
+}
+
+.day-chart__x-label {
+  position: absolute;
+  transform: translateX(-50%);
+
+  &.is-minor {
+    opacity: 0.55;
+  }
+
+  &.is-first {
+    transform: none;
+  }
+
+  &.is-last {
+    right: 0;
+    transform: none;
+  }
+}
+
+// Marker row for one tag (e.g. cravings).
+.day-chart__lane {
+  position: relative;
+  height: 23px; // design: 22px content-box + 1px border
+  margin-top: 10px;
+  border-top: 1px solid $line-subtle;
+}
+
+.day-chart__lane-label {
+  position: absolute;
+  top: 5px;
+  right: 0;
+  font-size: 11px;
+  color: $color-text-ghost;
+}
+
+.day-chart__lane-mark {
+  position: absolute;
+  top: 7px;
+  display: flex;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+// ── Tooltip shared by the charts ──────────────────────────────────────
+// Content-box so width/padding read exactly as in the design (260 + padding).
+.chart-tooltip {
+  position: absolute;
+  z-index: $z-tooltip;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: content-box;
+  width: 260px;
+  padding: 12px 14px;
+  background: $color-tooltip;
+  border: 1px solid $line-control;
+  border-radius: $radius-md;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.chart-tooltip__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chart-tooltip__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+}
+
+.chart-tooltip__value,
+.chart-tooltip__meta {
+  font-family: $font-mono;
+  font-size: 12px;
+  color: $color-text-subtle;
+}
+
+.chart-tooltip__body {
+  font-size: 13px;
+  color: $color-text-secondary;
+  text-wrap: pretty;
+}
+
+.chart-tooltip__sub {
+  font-size: 11.5px;
+  color: $color-text-dim;
+}
