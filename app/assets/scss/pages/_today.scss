@@ -12,12 +12,17 @@
 }
 
 // ── Header ────────────────────────────────────────────────────────────
+// The actions row doesn't wrap (as designed); the label wraps within itself
+// instead, so the row always fits next to the fixed-size search button.
 .today-header__last {
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-size: 13px;
   color: $color-text-faint;
 }
 
 .search-button {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 10px;

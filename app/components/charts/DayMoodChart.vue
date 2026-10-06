@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ChartLane } from '~/types/chart'
 import type { MoodEntry } from '~/types/mood'
-import { dayAxisPosition, scoreToY, smoothPath, type Point } from '~/utils/chart'
+import { dayAxisPosition, dayAxisStart, placeTooltip, scoreToY, smoothPath, type Point } from '~/utils/chart'
 import { formatClock, minuteOfDay } from '~/utils/date'
 import { getMood, MOODS } from '~/utils/mood'
 
@@ -24,26 +24,56 @@ const props = defineProps<{
 const W = 1000
 const H = 220
 const Y_TICKS = [10, 7, 4, 1]
-const X_TICKS = [6, 9, 12, 15, 18, 21, 24].map(hour => ({
-  hour,
-  label: `${String(hour).padStart(2, '0')}:00`,
-  left: ((hour - 6) / 18) * 100,
-  minor: hour % 6 !== 0,
-}))
+// Design tooltip: 260px content + 2×14px padding + 2×1px border.
+const TOOLTIP_WIDTH = 290
+const TOOLTIP_GAP = 14
 
 const uid = useId()
 const lineGradient = `${uid}-line`
 const areaGradient = `${uid}-area`
 
 const pct = (n: number) => `${n}%`
+const minuteOf = (entry: MoodEntry) => minuteOfDay(entry.loggedAt, props.timeZone)
+
+// 06:00–24:00 as designed; starts earlier only if something happened before 06:00.
+const axisStart = computed(() => dayAxisStart([
+  ...props.entries.map(minuteOf),
+  ...(props.showComparison && props.comparison ? props.comparison.map(minuteOf) : []),
+  ...(props.nowMinute == null ? [] : [props.nowMinute]),
+]))
+const xTicks = computed(() => {
+  const startHour = axisStart.value / 60
+  const ticks = []
+  for (let hour = startHour; hour <= 24; hour += 3) {
+    ticks.push({
+      hour,
+      label: `${String(hour).padStart(2, '0')}:00`,
+      left: ((hour - startHour) / (24 - startHour)) * 100,
+      minor: hour % 6 !== 0,
+      first: hour === startHour,
+      last: hour === 24,
+    })
+  }
+  return ticks
+})
+
 const toPoint = (entry: MoodEntry): Point =>
-  [dayAxisPosition(minuteOfDay(entry.loggedAt, props.timeZone)) * W, scoreToY(entry.score, H)]
+  [dayAxisPosition(minuteOf(entry), axisStart.value) * W, scoreToY(entry.score, H)]
 
 const sorted = computed(() => [...props.entries].sort((a, b) => a.loggedAt.localeCompare(b.loggedAt)))
 
 const points = computed(() => sorted.value.map((entry) => {
   const [x, y] = toPoint(entry)
-  return { entry, x, y, mood: getMood(entry.level), minute: minuteOfDay(entry.loggedAt, props.timeZone) }
+  const mood = getMood(entry.level)
+  const minute = minuteOf(entry)
+  // Accessible name carries what the tooltip shows: "Low 4/10 at 10:12. <note> Tags: Work, Gym."
+  const note = entry.note.trim()
+  const parts = [
+    `${mood.label} ${entry.score}/10 at ${formatClock(minute)}.`,
+    note && (/[.!?…]$/.test(note) ? note : `${note}.`),
+    entry.tags.length ? `Tags: ${entry.tags.join(', ')}.` : '',
+  ]
+  return { entry, x, y, mood, minute, label: parts.filter(Boolean).join(' ') }
 }))
 
 const linePath = computed(() => smoothPath(points.value.map(p => [p.x, p.y] as const)))
@@ -55,18 +85,27 @@ const areaPath = computed(() => {
 const comparisonPath = computed(() =>
   props.showComparison && props.comparison ? smoothPath([...props.comparison].sort((a, b) => a.loggedAt.localeCompare(b.loggedAt)).map(toPoint)) : '')
 
-const nowX = computed(() => (props.nowMinute == null ? null : dayAxisPosition(props.nowMinute) * W))
+const nowX = computed(() => (props.nowMinute == null ? null : dayAxisPosition(props.nowMinute, axisStart.value) * W))
 
+const plot = useTemplateRef<HTMLElement>('plot')
+const plotWidth = ref(0)
 const hoverId = ref<string | null>(null)
+
+function showTooltip(id: string) {
+  plotWidth.value = plot.value?.clientWidth ?? 0
+  hoverId.value = id
+}
+
 const hovered = computed(() => points.value.find(p => p.entry.id === hoverId.value) ?? null)
+
 const tooltip = computed(() => {
   const p = hovered.value
-  if (!p) return null
-  const xPct = p.x / 10
+  if (!p || !plotWidth.value) return null
+  const width = Math.min(TOOLTIP_WIDTH, plotWidth.value)
   return {
-    x: pct(xPct),
+    x: `${placeTooltip((p.x / W) * plotWidth.value, plotWidth.value, width, TOOLTIP_GAP)}px`,
     y: pct((p.y / H) * 100),
-    transform: `translate(${xPct > 62 ? 'calc(-100% - 14px)' : '14px'}, ${p.entry.score > 6 ? '-10%' : '-90%'})`,
+    transform: `translateY(${p.entry.score > 6 ? '-10%' : '-90%'})`,
     color: p.mood.color,
     title: p.mood.label,
     value: `${p.entry.score}/10`,
@@ -104,6 +143,7 @@ const summary = computed(() => {
     </div>
 
     <div
+      ref="plot"
       class="day-chart__plot"
       @mouseleave="hoverId = null"
     >
@@ -198,9 +238,9 @@ const summary = computed(() => {
         class="day-chart__point"
         :class="{ 'is-hovered': p.entry.id === hoverId }"
         :style="{ 'left': pct(p.x / 10), 'top': pct((p.y / H) * 100), '--mood': p.mood.color }"
-        :aria-label="`${p.mood.label} ${p.entry.score}/10 at ${formatClock(p.minute)}`"
-        @mouseenter="hoverId = p.entry.id"
-        @focus="hoverId = p.entry.id"
+        :aria-label="p.label"
+        @mouseenter="showTooltip(p.entry.id)"
+        @focus="showTooltip(p.entry.id)"
         @blur="hoverId = null"
       >
         <span
@@ -222,11 +262,11 @@ const summary = computed(() => {
       aria-hidden="true"
     >
       <span
-        v-for="tick in X_TICKS"
+        v-for="tick in xTicks"
         :key="tick.hour"
         class="day-chart__x-label"
-        :class="{ 'is-minor': tick.minor, 'is-first': tick.hour === 6, 'is-last': tick.hour === 24 }"
-        :style="{ left: tick.hour === 24 ? undefined : pct(tick.left) }"
+        :class="{ 'is-minor': tick.minor, 'is-first': tick.first, 'is-last': tick.last }"
+        :style="{ left: tick.last ? undefined : pct(tick.left) }"
       >{{ tick.label }}</span>
     </div>
 

@@ -194,6 +194,7 @@
   gap: 8px;
   box-sizing: content-box;
   width: 260px;
+  max-width: calc(100% - 30px); // never wider than the plot on narrow screens
   padding: 12px 14px;
   background: $color-tooltip;
   border: 1px solid $line-control;

@@ -33,7 +33,34 @@ export function scoreToY(score: number, height: number, inset = 20): number {
   return inset + ((10 - score) / 9) * (height - 2 * inset)
 }
 
-/** Position (0–1) of a time of day on a 06:00–24:00 axis, clamped. */
-export function dayAxisPosition(minuteOfDay: number): number {
-  return Math.min(1, Math.max(0, (minuteOfDay - 360) / 1080))
+/** The design's day axis starts at 06:00. */
+export const DAY_AXIS_DEFAULT_START = 360
+
+/**
+ * Start (minutes) of the day axis: 06:00, or earlier — on a 3-hour mark — when
+ * any of `minutes` falls before 06:00, so early check-ins keep their real position.
+ */
+export function dayAxisStart(minutes: readonly number[]): number {
+  const earliest = Math.min(DAY_AXIS_DEFAULT_START, ...minutes)
+  return Math.max(0, Math.floor(earliest / 180) * 180)
+}
+
+/** Position (0–1) of a time of day on a `start`–24:00 axis. */
+export function dayAxisPosition(minuteOfDay: number, start = DAY_AXIS_DEFAULT_START): number {
+  return Math.min(1, Math.max(0, (minuteOfDay - start) / (1440 - start)))
+}
+
+/**
+ * Left edge (px) for a tooltip `width` wide beside a point at `x` in a plot
+ * `plotWidth` wide. As designed: right of the point up to 62% across, left
+ * beyond. If the preferred side doesn't fit, use the other; if neither fits
+ * (narrow screens), clamp the card inside the plot.
+ */
+export function placeTooltip(x: number, plotWidth: number, width: number, gap = 14): number {
+  const fitsRight = x + gap + width <= plotWidth
+  const fitsLeft = x - gap - width >= 0
+  const preferLeft = x / plotWidth > 0.62
+  if (preferLeft ? fitsLeft : !fitsRight && fitsLeft) return x - gap - width
+  if (fitsRight) return x + gap
+  return Math.min(Math.max(0, x - width / 2), plotWidth - width)
 }
