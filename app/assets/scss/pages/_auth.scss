@@ -1,0 +1,390 @@
+@use '../abstracts' as *;
+
+// ── Layout: brand panel | form column ─────────────────────────────────
+.auth {
+  display: flex;
+  min-height: 100vh;
+  background: $color-bg;
+}
+
+.auth__main {
+  display: flex;
+  flex: 1 1 50%;
+  flex-direction: column;
+  min-width: 0;
+  padding: 32px 48px 28px;
+
+  @include respond-to(mobile) {
+    padding: 18px 20px 24px;
+  }
+}
+
+.auth__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth__mobile-brand {
+  .brand__name {
+    letter-spacing: normal;
+  }
+
+  @include respond-to(desktop) {
+    display: none;
+  }
+}
+
+.auth__spacer {
+  flex: 1;
+}
+
+.auth__switch {
+  font-size: 13px;
+  color: $color-text-faint;
+}
+
+.auth__switch-link {
+  color: $color-text;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
+.auth__center {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.auth__column {
+  width: 100%;
+  max-width: 380px;
+}
+
+.auth__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: $color-text-ghost;
+}
+
+.auth__legal {
+  display: flex;
+  gap: 16px;
+  color: $color-text-dim;
+}
+
+// ── Brand panel ───────────────────────────────────────────────────────
+.auth-brand {
+  position: relative;
+  display: flex;
+  flex: 1 1 50%;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 36px 48px 44px;
+  background: $color-sidebar;
+  border-right: 1px solid $line-soft;
+
+  @include respond-to(mobile) {
+    display: none;
+  }
+}
+
+.auth-brand__logo,
+.auth-brand__copy {
+  position: relative;
+  z-index: 2;
+}
+
+.auth-brand__logo {
+  align-self: flex-start;
+}
+
+.auth-brand__ladder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+
+  // Sizes below are the design's content-box values.
+  > * {
+    box-sizing: content-box;
+  }
+}
+
+.auth-brand__glow {
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(closest-side, rgba(150, 170, 116, 0.16), transparent);
+  transform: translate(-50%, -50%);
+  animation: au-breathe 7s ease-in-out infinite;
+}
+
+.auth-brand__ring {
+  border-radius: 50%;
+  border: 1px dashed;
+}
+
+.auth-brand__ring--far {
+  width: 44px;
+  height: 44px;
+  border-color: $line-emphasis;
+  opacity: 0.3;
+}
+
+.auth-brand__ring--near {
+  width: 64px;
+  height: 64px;
+  border-color: rgba(255, 255, 255, 0.14);
+  opacity: 0.55;
+}
+
+.auth-brand__pill {
+  width: 8px;
+  height: 22px;
+  border-radius: 8px;
+}
+
+.auth-brand__pill--far {
+  background: rgba(89, 89, 89, 0.25);
+  opacity: 0.4;
+}
+
+.auth-brand__pill--near {
+  background: rgba(89, 89, 89, 0.3);
+  opacity: 0.7;
+}
+
+.auth-brand__orb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, $color-sage-light, $color-sage 70%);
+  box-shadow: 0 0 90px -4px rgba(150, 170, 116, 0.5);
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #FFFFFF;
+  text-transform: uppercase;
+}
+
+.auth-brand__stem {
+  width: 12px;
+  height: 120px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(150, 170, 116, 0.6), rgba(150, 170, 116, 0.05));
+}
+
+// Future floors fade out towards the top.
+.auth-brand__fade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  height: 42%;
+  background: linear-gradient(to bottom, $color-sidebar 20%, rgba(9, 9, 10, 0));
+  pointer-events: none;
+}
+
+.auth-brand__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 440px;
+}
+
+.auth-brand__quote {
+  font-family: $font-quote;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 28px;
+  line-height: 1.35;
+  color: $color-text-quote;
+  text-wrap: pretty;
+}
+
+.auth-brand__sub {
+  font-size: 13.5px;
+  color: $color-text-faint;
+}
+
+// ── Page content ──────────────────────────────────────────────────────
+.auth-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.auth-page--compact {
+  gap: 24px;
+}
+
+.auth-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-intro__eyebrow {
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $color-text-faint;
+
+  .auth-intro--success & {
+    color: $color-sage-label;
+  }
+}
+
+.auth-intro__title {
+  @include serif-title(34px);
+}
+
+.auth-intro__description {
+  font-size: 14px;
+  color: $color-text-subtle;
+  text-wrap: pretty;
+}
+
+.oauth {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.oauth__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.oauth__button {
+  height: 42px;
+  background: $color-surface;
+  border: 1px solid $line-control;
+  border-radius: 7px;
+  color: $color-text;
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: border-color $duration-base;
+
+  &:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.oauth__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: $color-text-ghost;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $line;
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-form--tight {
+  gap: 14px;
+}
+
+.auth-form__error {
+  font-size: 13px;
+  color: $color-error-form;
+}
+
+.auth-form__submit {
+  margin-top: 6px;
+}
+
+.auth-link,
+.auth-back {
+  color: $color-text-subtle;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
+.auth-link {
+  font-size: 12.5px;
+}
+
+.auth-back {
+  align-self: flex-start;
+  font-size: 13px;
+}
+
+.auth-note {
+  font-size: 12.5px;
+  color: $color-text-dim;
+}
+
+// ── Welcome (first mood) ──────────────────────────────────────────────
+.welcome__logged {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.welcome__line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: $color-text-secondary;
+
+  .mood-dot {
+    box-shadow: 0 0 10px var(--dot-color);
+  }
+}
+
+.welcome__skip {
+  align-self: flex-start;
+  font-size: 13px;
+  color: $color-text-faint;
+
+  &:hover {
+    color: $color-text;
+  }
+}

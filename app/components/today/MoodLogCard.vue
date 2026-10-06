@@ -7,6 +7,8 @@ defineProps<{
   pulseKey: number
   timeZone: string
   tagOptions: readonly string[]
+  /** A save failed; shown under the picker. */
+  error?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -14,6 +16,7 @@ const emit = defineEmits<{
   update: [patch: MoodEntryPatch]
   undo: []
   done: []
+  dismissError: []
 }>()
 
 const panel = useTemplateRef<{ focusNote: () => void }>('panel')
@@ -46,6 +49,22 @@ defineExpose({ focusNote: () => panel.value?.focusNote() })
       :pulse-key="pulseKey"
       @pick="emit('pick', $event)"
     />
+
+    <!-- Not in the design: a save failure has to be visible. -->
+    <p
+      v-if="error"
+      class="mood-log-card__error"
+      role="alert"
+    >
+      {{ error }}
+      <button
+        type="button"
+        class="mood-log-card__error-dismiss"
+        @click="emit('dismissError')"
+      >
+        Dismiss
+      </button>
+    </p>
 
     <MoodLogPanel
       v-if="current"

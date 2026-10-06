@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { MOODS, type MoodLevel } from '~/utils/mood'
 
-defineProps<{
+withDefaults(defineProps<{
   /** Mood of the entry being logged, if any. */
   selected?: MoodLevel | null
   /** Changes on every pick so the selected tile pulses again. */
   pulseKey?: number
-}>()
+  /** large — Today (key, ticks, pulse) · compact — onboarding (dot + label). */
+  variant?: 'large' | 'compact'
+}>(), { variant: 'large' })
 
 const emit = defineEmits<{ pick: [level: MoodLevel] }>()
 
@@ -17,6 +19,7 @@ const TICKS = [1, 2, 3, 4, 5] as const
 <template>
   <div
     class="mood-picker"
+    :class="`mood-picker--${variant}`"
     role="group"
     aria-label="How do you feel right now?"
   >
@@ -32,12 +35,15 @@ const TICKS = [1, 2, 3, 4, 5] as const
       @click="emit('pick', mood.level)"
     >
       <span
-        v-if="selected === mood.level"
+        v-if="variant === 'large' && selected === mood.level"
         :key="pulseKey"
         class="mood-picker__pulse"
         aria-hidden="true"
       />
-      <span class="mood-picker__top">
+      <span
+        v-if="variant === 'large'"
+        class="mood-picker__top"
+      >
         <span class="mood-picker__key">{{ mood.level }}</span>
         <span
           class="mood-picker__ticks"

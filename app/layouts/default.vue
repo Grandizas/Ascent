@@ -1,11 +1,25 @@
 <script setup lang="ts">
 import { PRIMARY_NAV, SETTINGS_NAV } from '~/utils/navigation'
 
+const { profile, load, update } = useProfile()
+const { signOut } = useAuth()
+
+await useAsyncData('profile', () => load())
+
+// Keep the stored timezone in step with the browser (first visit, travel), so
+// server-side analytics agree with what the user sees.
+onMounted(() => {
+  const browserZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  if (profile.value && browserZone && profile.value.timezone !== browserZone) {
+    update({ timezone: browserZone }).catch(error => console.error('[profile] timezone sync failed', error))
+  }
+})
+
 // Global navigation shortcuts, shown as keycaps in the sidebar.
 const go = (to: string) => () => navigateTo(to)
 useHotkeys({
   ...Object.fromEntries([...PRIMARY_NAV, SETTINGS_NAV].map(item => [item.shortcut, go(item.to)])),
-  'shift+q': go('/login'),
+  'shift+q': () => signOut(),
 })
 </script>
 

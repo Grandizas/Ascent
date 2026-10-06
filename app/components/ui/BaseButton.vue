@@ -11,8 +11,12 @@ const props = withDefaults(defineProps<{
    * icon — square hairline (period arrows)
    */
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'sage' | 'icon'
-  /** Heights from the design: xs 28 · sm 30 · md 34 · lg 36 · xl 38 · 2xl 40. */
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+  /** Heights from the design: xs 28 · sm 30 · md 34 · lg 36 · xl 38 · 2xl 40 · 3xl 44 (auth). */
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
+  /** Full width. */
+  block?: boolean
+  /** Dims the button and blocks clicks while an action runs. */
+  loading?: boolean
   /** Renders a NuxtLink instead of a button. */
   to?: RouteLocationRaw
   type?: 'button' | 'submit' | 'reset'
@@ -32,10 +36,11 @@ const NuxtLink = resolveComponent('NuxtLink')
   <component
     :is="props.to ? NuxtLink : 'button'"
     class="btn"
-    :class="[`btn--${props.variant}`, `btn--${props.size}`]"
+    :class="[`btn--${props.variant}`, `btn--${props.size}`, { 'btn--block': props.block, 'is-loading': props.loading }]"
     :to="props.to"
     :type="props.to ? undefined : props.type"
-    :disabled="props.to ? undefined : props.disabled"
+    :disabled="props.to ? undefined : props.disabled || props.loading"
+    :aria-busy="props.loading || undefined"
   >
     <slot />
     <KeyHint

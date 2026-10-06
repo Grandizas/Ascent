@@ -37,6 +37,8 @@
 }
 
 .mobile-top-bar__sign-out {
+  @include button-reset;
+
   display: flex;
   align-items: center;
   gap: 8px;

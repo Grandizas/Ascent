@@ -1,7 +1,8 @@
 // The only file that imports Font Awesome icon packages.
 // Components refer to icons by these semantic names via <AppIcon name="…" />.
-// To move to Pro: install the @fortawesome/pro-* packages (token via env, see
-// .npmrc.example) and swap the imports below — no component changes needed.
+// Pro Light matches the design's thin 1.5px line work. Pro packages install
+// from the Font Awesome registry (see .npmrc.example); add another style
+// package here only when an icon needs it.
 import {
   faArrowLeft,
   faArrowRight,
@@ -9,12 +10,13 @@ import {
   faCheck,
   faChevronLeft,
   faChevronRight,
+  faEye,
+  faEyeSlash,
   faGear,
   faMagnifyingGlass,
   faPlus,
   faXmark,
-} from '@fortawesome/free-solid-svg-icons'
-import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons'
+} from '@fortawesome/pro-light-svg-icons'
 
 export const icons = {
   'arrow-left': faArrowLeft,

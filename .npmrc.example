@@ -1,4 +1,0 @@
-# Font Awesome Pro: rename to .npmrc when Pro is enabled.
-# The token is read from the environment (locally and on Vercel) — never paste it here.
-@fortawesome:registry=https://npm.fontawesome.com/
-//npm.fontawesome.com/:_authToken=${FONTAWESOME_PACKAGE_TOKEN}

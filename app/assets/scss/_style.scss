@@ -22,5 +22,7 @@
 @use 'components/mood-log';
 @use 'components/day-chart';
 @use 'components/moments';
+@use 'components/fields';
 
 @use 'pages/today';
+@use 'pages/auth';

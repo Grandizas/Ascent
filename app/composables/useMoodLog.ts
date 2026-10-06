@@ -7,7 +7,7 @@ import { getMood, type MoodLevel } from '~/utils/mood'
  * Tapping another mood while an entry is open changes that entry instead.
  */
 export function useMoodLog() {
-  const { entries, addEntry, updateEntry, removeEntry } = useMoodEntries()
+  const { entries, addEntry, updateEntry, updateEntrySoon, flush, removeEntry } = useMoodEntries()
 
   const currentId = ref<string | null>(null)
   /** Increments on every pick so the pulse animation can restart. */
@@ -40,7 +40,10 @@ export function useMoodLog() {
 
   async function update(patch: MoodEntryPatch) {
     if (creating) await creating
-    if (current.value) await updateEntry(current.value.id, patch)
+    if (!current.value) return
+    // Notes change on every keystroke: save once typing pauses.
+    if (Object.keys(patch).length === 1 && 'note' in patch) updateEntrySoon(current.value.id, patch)
+    else await updateEntry(current.value.id, patch)
   }
 
   async function undo() {
@@ -52,6 +55,7 @@ export function useMoodLog() {
   }
 
   function done() {
+    if (currentId.value) flush(currentId.value)
     currentId.value = null
   }
 
