@@ -1,0 +1,24 @@
+@use 'sass:map';
+@use 'sass:string';
+
+// The design switches layout at 760px (`window.innerWidth < 760`).
+// Add named ranges here; never write a raw @media query in a partial.
+$breakpoints: (
+  mobile: '(max-width: 759.98px)',
+  desktop: '(min-width: 760px)',
+  reduced-motion: '(prefers-reduced-motion: reduce)',
+);
+
+// Usage:
+//   .sidebar {
+//     @include respond-to(mobile) { display: none; }
+//   }
+@mixin respond-to($name) {
+  @if not map.has-key($breakpoints, $name) {
+    @error 'Unknown breakpoint `#{$name}`. Available: #{map.keys($breakpoints)}.';
+  }
+
+  @media #{string.unquote(map.get($breakpoints, $name))} {
+    @content;
+  }
+}

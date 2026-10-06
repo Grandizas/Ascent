@@ -1,0 +1,5 @@
+// Everything here is compile-time only (no CSS output), so it is safe to
+// inject into every SCSS file via `additionalData` in nuxt.config.ts.
+@forward 'tokens';
+@forward 'breakpoints';
+@forward 'mixins';
