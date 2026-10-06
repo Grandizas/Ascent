@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { todayObservationFixture } from '~/fixtures/mood'
+import { todayObservationFixture } from '~/fixtures/insights'
 import type { ChartLane } from '~/types/chart'
 import type { MoodEntry } from '~/types/mood'
 import { summarizeScores } from '~/utils/analytics/stats'
@@ -10,9 +10,15 @@ useHead({ title: 'Today' })
 
 const timeZone = useTimezone()
 const now = useNow()
-const { profile } = useProfile()
-const { entries } = useMoodEntries()
+const { firstName } = useProfile()
+const { entries, loadRecent, syncError, clearSyncError } = useMoodEntries()
 const { current, pulseKey, log, update, undo, done } = useMoodLog()
+
+// Today, yesterday and the 30-day average all come from the last 31 days.
+await useAsyncData('mood-entries:recent', async () => {
+  await loadRecent(timeZone.value, 31)
+  return true
+})
 
 // Phase 6: comes from the active journey's tracked tag instead of a constant.
 const cravingsLane: ChartLane = { tag: 'Nicotine craving', label: 'Cravings', itemLabel: 'Craving' }
@@ -29,7 +35,6 @@ const monthAverage = computed(() => {
   const from = addDays(today.value, -29)
   return summarizeScores(entries.value.filter(e => dayKey(e.loggedAt, timeZone.value) >= from).map(e => e.score)).average
 })
-const firstName = computed(() => profile.value.displayName.split(' ')[0] ?? '')
 
 // ── Logging ────────────────────────────────────────────────────────────
 const card = useTemplateRef<{ focusNote: () => void }>('card')
@@ -78,6 +83,8 @@ useHotkeys({
         :pulse-key="pulseKey"
         :time-zone="timeZone"
         :tag-options="DEFAULT_TAGS"
+        :error="syncError"
+        @dismiss-error="clearSyncError"
         @pick="pick"
         @update="update"
         @undo="undo"

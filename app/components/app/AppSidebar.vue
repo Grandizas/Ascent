@@ -3,7 +3,8 @@ import { isNavActive, PRIMARY_NAV, SETTINGS_NAV } from '~/utils/navigation'
 
 const route = useRoute()
 const journeys = useActiveJourneys()
-const { profile, initials, memberSinceLabel } = useProfile()
+const { displayName, initials, memberSinceLabel } = useProfile()
+const { signOut } = useAuth()
 </script>
 
 <template>
@@ -61,15 +62,15 @@ const { profile, initials, memberSinceLabel } = useProfile()
       <div class="sidebar__user">
         <AppAvatar :initials="initials" />
         <div class="sidebar__user-text">
-          <span class="sidebar__user-name">{{ profile.displayName }}</span>
+          <span class="sidebar__user-name">{{ displayName }}</span>
           <span class="sidebar__user-since">{{ memberSinceLabel }}</span>
         </div>
       </div>
       <AppNavItem
-        to="/login"
         label="Sign out"
         shortcut="⇧Q"
         muted
+        @click="signOut"
       />
     </div>
   </aside>

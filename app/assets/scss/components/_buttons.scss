@@ -27,6 +27,7 @@ $button-sizes: (
   lg: (36px, 16px, 13px),
   xl: (38px, 18px, 13.5px),
   2xl: (40px, 20px, 14px),
+  3xl: (44px, 20px, 14px),
 );
 
 @each $name, $size in $button-sizes {
@@ -38,8 +39,24 @@ $button-sizes: (
 }
 
 .btn--md,
-.btn--lg {
+.btn--lg,
+.btn--3xl {
   gap: 10px;
+}
+
+// Auth forms use slightly rounder 44px controls.
+.btn--3xl {
+  border-radius: 7px;
+}
+
+.btn--block {
+  display: flex;
+  width: 100%;
+}
+
+.btn.is-loading {
+  opacity: 0.7;
+  cursor: progress;
 }
 
 // Variants set both states explicitly so links don't pick up the global amber hover.

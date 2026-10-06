@@ -219,7 +219,7 @@ supabase/
   ```
 - **`AppIcon` component:** takes `name: keyof typeof icons`. Switching to Pro later means changing the imports in `icons.ts`; nothing else changes.
 - **Pro later:**
-  - An `.npmrc` entry `@fortawesome:registry=https://npm.fontawesome.com/` with `//npm.fontawesome.com/:_authToken=${FONTAWESOME_PACKAGE_TOKEN}`, where the token is an env var. Locally it lives in user-level config; on Vercel it is a project env var.
+  - An `.npmrc` entry `@fortawesome:registry=https://npm.fontawesome.com/` with `//npm.fontawesome.com/:_authToken=${FONT_AWESOME_TOKEN}`, where the token is an env var. Locally it lives in user-level config; on Vercel it is a project env var.
   - We add this `.npmrc` only when Pro is enabled. **No token is ever committed.**
 - **Design fidelity rule:** the design deliberately draws some glyphs in CSS. Those are brand and data-visualization marks, not interface icons, so they stay CSS:
   - the brand mark
@@ -235,7 +235,7 @@ supabase/
 - **`.env.example`** (committed, no values):
   - `NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY` (anon / publishable)
   - Later: `ANTHROPIC_API_KEY` (server only)
-  - Later: `FONTAWESOME_PACKAGE_TOKEN`, used only for install
+  - `FONT_AWESOME_TOKEN`, used only by npm at install time (shell / Vercel env, not `.env`)
 - **Service-role key:** never used in the browser. If a server route ever needs it, it lives in a server-only `runtimeConfig` key.
 
 ---
@@ -344,7 +344,7 @@ Child tables carry `user_id` too, which keeps policies simple and fast. Schema c
 | Migration (phase) | Tables | Notes |
 |---|---|---|
 | 1. Profiles (Phase 3) | `profiles(id pk → auth.users, display_name, timezone, created_at)` | Created on signup by a trigger. `timezone` drives day grouping. |
-| 2. Mood (Phase 3) | `mood_entries(id, user_id, logged_at timestamptz, level smallint 1–5, score smallint 1–10, note text, created_at, updated_at)`; `tags(id, user_id, name, unique(user_id, lower(name)))`; `mood_entry_tags(entry_id, tag_id, user_id)` | `level` is what the user tapped; `score` is the 1–10 intensity (defaults Sad 2, Low 4, Neutral 5, Good 7, Great 9, as in the design). Default tags are seeded per user from the design's list. Index on `(user_id, logged_at desc)`. |
+| 2. Mood (Phase 3) | `mood_entries(id, user_id, logged_at timestamptz, level smallint 1–5, score smallint 1–10, note text, tags text[], created_at, updated_at)` | `level` is what the user tapped; `score` is the 1–10 intensity (defaults Sad 2, Low 4, Neutral 5, Good 7, Great 9, as in the design). **Tags are a `text[]` on the entry** rather than tag tables: every check-in stays a single atomic write, and analytics use `unnest()`. A per-user `tags` table can be added once tag management is designed. Indexes: `(user_id, logged_at desc)` and GIN on `tags`. |
 | 3. Journal (Phase 5) | `journal_entries(id, user_id, written_at, body)` | The design's "longer entries". Notes on check-ins stay on `mood_entries`. |
 | 4. Journeys (Phase 6) | `journeys(id, user_id, name, what_text, why_text, why_written_at, length_days, checkpoint_days int[], color, status, created_at)`; `journey_rules(id, journey_id, user_id, kind 'remove'\|'allow', label, suggested bool, position)`; `journey_attempts(id, journey_id, user_id, number, started_at, ended_at, end_reason 'setback'\|'paused'\|'completed'\|null)`; `journey_setbacks(id, attempt_id, user_id, occurred_at, note, outcome 'continued'\|'restarted')` | "A setback is recorded, not reset." **Continue** keeps the attempt running and logs a setback. **Restart** ends the attempt and opens attempt N+1. Previous attempts are always kept. |
 | Later | `ai_insights` cache, if AI summaries are added | Only when the AI phase starts. |
@@ -364,7 +364,7 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - **Nuxt is pinned to `4.5.2`.** 4.6.0 fails every SSR request with "Either manifest or precomputed data must be provided"; a clean, untouched scaffold fails the same way. Re-test before upgrading.
 - [x] `sass` with tokens/breakpoints/mixins injected through `additionalData`, and the `_style.scss` entry.
 - [x] `@nuxt/fonts` self-hosts the four families with the exact weights and styles the design loads (Newsreader upright 300 included, see §8 #6).
-- [x] Font Awesome: `utils/icons.ts` (the only FA import site), `AppIcon` and a plugin. `.npmrc.example` holds the Pro registry config, with the token read from the environment.
+- [x] Font Awesome: `utils/icons.ts` (the only FA import site), `AppIcon` and a plugin. The committed `.npmrc` holds the Pro registry config; the token comes from the `FONT_AWESOME_TOKEN` environment variable (Windows user env locally, Vercel project env in deploys).
 - [x] `.env.example` (`NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY`). `.env*` is gitignored.
 - [x] `@nuxtjs/supabase` is installed. It registers itself only when those env vars exist, with redirect off; until then the app runs without it.
 - [x] `nuxt build` succeeds. Locally it uses the `node-server` preset; on Vercel, Nitro switches to the Vercel preset automatically.
@@ -407,14 +407,42 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - A generic `MoodLineChart` base will be extracted in phase 4, once Timeline gives a second real use. Today's chart already uses the shared `smoothPath` and `scoreToY` helpers and the shared tooltip.
   - Note edits should be debounced when Supabase lands.
 
-### Phase 3: Supabase, auth and real mood data
-- [ ] Migrations 1–2, RLS, profile trigger, default tags, generated types.
-- [ ] `layouts/auth.vue` with `AuthBrandPanel` (sage ladder, breathing glow).
-- [ ] Login, signup (name, strength meter), forgot password ("check your inbox"), reset password (new-password form extrapolated from the auth style), and welcome / first mood.
-- [ ] Email and password via Supabase Auth. Google and Apple buttons are present and wired to `signInWithOAuth`; they work once the providers are configured in the Supabase dashboard (Q4).
-- [ ] Route protection (redirect to `/login`), sign out, and `⇧Q`.
-- [ ] Swap the Today fixtures for Supabase. Optimistic insert and update, undo deletes the entry.
-- [ ] Dev seed data.
+### Phase 3: Supabase, auth and real mood data ✅
+- [x] **Database** (Supabase project "Ascent", eu-central-1). Migrations live in `supabase/migrations/` and are applied to the project.
+  - `profiles` is created by a trigger from signup metadata. It holds the display name, falling back to the OAuth name and then the email prefix, and a timezone validated against `pg_timezone_names`, falling back to UTC.
+  - `mood_entries` is described in §6.
+  - RLS is on for both tables, with owner-only policies using `(select auth.uid())`.
+  - A rolled-back two-user test confirmed:
+    - each user sees, updates and deletes only their own rows
+    - inserting a row as another user is blocked
+    - invalid values are rejected
+    - anonymous requests get nothing
+  - The security advisor reports nothing. Types are generated into `app/types/database.types.ts`.
+- [x] **Auth layout:** `layouts/auth.vue` and `AuthBrandPanel` (the sage climb with a breathing glow and top fade). The top-right switch link comes from `definePageMeta({ authSwitch })`.
+- [x] **Auth pages:**
+  - Built from the design: `/login`, `/signup` (strength meter), `/forgot-password` ("Check your inbox") and `/welcome` (first mood, using the compact `MoodPicker`).
+  - Extrapolated: `/reset-password`, `/confirm` (callback for email and OAuth links), and signup's "check your inbox" step for projects that require email confirmation.
+  - Shared form components: `TextField`, `PasswordField`, `PasswordStrength`, `AuthIntro` and `OAuthButtons`.
+  - Login and signup match the running design to within 0.5px at 1280px and 375px.
+- [x] **Auth behaviour:**
+  - `useAuth` handles email and password sign-in and sign-up, password reset, and Google OAuth (needs the provider enabled in the dashboard). The design's "Continue with Apple" button was removed by decision: Apple needs a paid developer account and a client secret that has to be regenerated every 6 months.
+  - Supabase errors are translated into the product's own wording.
+  - Post-login redirect paths are checked to be in-app paths.
+  - The global middleware redirects to `/login`, and the `guest` middleware sends signed-in users away from the auth pages.
+  - Sign out (sidebar, mobile pill, `⇧Q`) reloads the app so no previous user's data stays in memory.
+- [x] **Mood data on Supabase** (`useMoodEntries`):
+  - Today loads the last 31 days on the server.
+  - Inserts, updates and deletes are optimistic and queued per entry, so an update can't reach the database before its insert.
+  - Failed writes roll back and show a dismissible error on the log card.
+  - Notes save after 600 ms of quiet; Done saves immediately.
+  - Mood fixtures are removed. The observation text (until phase 8) and active journeys (until phase 6) are still fixtures.
+- [x] **Profile:** `useProfile` loads it in the default layout. The stored timezone is kept in step with the browser's.
+- [x] **Font Awesome:** switched to Pro Light (`@fortawesome/pro-light-svg-icons`). The free packages are removed; `utils/icons.ts` is still the only import site.
+- [x] **Dev seed:** `supabase/seed/sample_history.sql` adds 30 days of history to one account, chosen by email.
+- **Dashboard setup** (not doable from code):
+  - Authentication → URL Configuration: set Site URL to `http://localhost:3001`. Add `http://localhost:3001/confirm` and `http://localhost:3001/reset-password` as redirect URLs, plus production equivalents later.
+  - Enable the Google provider (Google Cloud OAuth client, redirect URI `https://wibtmzslxwrbymdksmse.supabase.co/auth/v1/callback`).
+  - Decide whether email confirmation is on; both flows are handled.
 
 ### Phase 4: Timeline
 - [ ] Period model (day, week, 30 days, year, all; offset), keys `D/W/M/Y/A` and `←/→`, prev/next disabled rules.
@@ -494,6 +522,7 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 | 11 | Only the first active journey's dot glows in the sidebar. | Kept: the glow marks the first journey in the list. |
 | 12 | "Open timeline →" and "Journal →" links have no hover state in the design. | They brighten to `#ECEAE5` on hover, as other quiet controls do. |
 | 13 | Several design elements are content-box (chart dots, tooltip 260 + padding, lane 22 + border). | Kept at the design's rendered size; content-box is used locally where that's clearer. |
+| 14 | Auth shows "Continue with Google" and "Continue with Apple". | Apple removed by decision; Google keeps the design's button styling and spacing. |
 
 ---
 
@@ -502,7 +531,7 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 1. **Name:** is the product "baseline" (as in the design) or "Ascent"? *Default: show "baseline" via a single constant.*
 2. **Journey greys:** keep the journey-detail palette exactly as designed, or unify with the rest? *Default: keep exactly.*
 3. **Icons:** should the CSS-drawn glyphs (bottom-nav icons, text arrows ← → × ✓) stay as designed, or be replaced by Font Awesome equivalents? *Default: keep the design's glyphs, and use FA for new or functional icons.*
-4. **OAuth:** are Google and Apple sign-in required for the first release? *Default: buttons wired; they need provider setup in Supabase.*
+4. **OAuth:** ~~Google and Apple~~ **Resolved:** Google only; Apple removed.
 5. **⌘K "Search entries":** build the palette (undesigned), or route to the Journal search for now? *Default: route to `/journal` with the search focused.*
 6. **Setback flow and Settings** are not designed. Is it OK to extrapolate from the established style when we reach them? *Default: yes, minimal and in-style.*
 7. **Timezone:** use the browser timezone stored on the profile for day boundaries? *Default: yes.*

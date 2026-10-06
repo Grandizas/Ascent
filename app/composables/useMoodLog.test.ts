@@ -17,6 +17,10 @@ vi.stubGlobal('useMoodEntries', () => ({
   updateEntry: async (id: string, patch: Partial<MoodEntry>) => {
     store.value = store.value.map(e => (e.id === id ? { ...e, ...patch } : e))
   },
+  updateEntrySoon: (id: string, patch: Partial<MoodEntry>) => {
+    store.value = store.value.map(e => (e.id === id ? { ...e, ...patch } : e))
+  },
+  flush: async () => {},
   removeEntry: async (id: string) => {
     store.value = store.value.filter(e => e.id !== id)
   },

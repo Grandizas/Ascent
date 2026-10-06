@@ -108,3 +108,26 @@
     font-size: 13px;
   }
 }
+
+// ── Compact (onboarding): dot + label only ────────────────────────────
+.mood-picker--compact {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+
+  .mood-picker__tile {
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 6px;
+    height: 86px;
+    padding: 10px 8px;
+    transition: all $duration-base;
+
+    &.is-selected {
+      background: color-mix(in oklch, var(--mood) 10%, transparent);
+    }
+  }
+
+  .mood-picker__label {
+    font-size: 13px;
+  }
+}

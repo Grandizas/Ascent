@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const { initials } = useProfile()
+const { signOut } = useAuth()
 </script>
 
 <template>
@@ -14,16 +15,17 @@ const { initials } = useProfile()
       >
         Year review
       </NuxtLink>
-      <NuxtLink
-        to="/login"
+      <button
+        type="button"
         class="mobile-top-bar__sign-out"
+        @click="signOut"
       >
         <AppAvatar
           :initials="initials"
           size="sm"
         />
         Sign out
-      </NuxtLink>
+      </button>
     </div>
   </div>
 </template>

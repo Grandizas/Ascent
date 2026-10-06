@@ -1,5 +1,8 @@
 export interface Profile {
+  id: string
   displayName: string
-  /** ISO date the account was created. */
-  memberSince: string
+  /** IANA zone; decides what "today" means. */
+  timezone: string
+  /** ISO timestamp the account was created. */
+  createdAt: string
 }
