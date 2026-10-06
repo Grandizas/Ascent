@@ -1,4 +1,20 @@
 // Main SCSS entry, registered once in nuxt.config.ts (`css`).
-// Order: base → layout → components. Abstracts are @use'd by each partial.
+// Abstracts (tokens, breakpoints, mixins) are @use'd by each partial and output no CSS.
 
+@use 'base/root';
 @use 'base/reset';
+@use 'base/typography';
+@use 'base/animations';
+
+@use 'layout/shell';
+@use 'layout/sidebar';
+@use 'layout/mobile';
+@use 'layout/page';
+
+@use 'components/key-hint';
+@use 'components/buttons';
+@use 'components/segmented';
+@use 'components/card';
+@use 'components/chip';
+@use 'components/headers';
+@use 'components/markers';

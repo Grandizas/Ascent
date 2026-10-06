@@ -1,0 +1,24 @@
+@use '../abstracts' as *;
+
+.key-hint {
+  font-family: $font-mono;
+  font-size: 11px;
+  line-height: inherit;
+}
+
+.key-hint--plain {
+  color: $color-text-key;
+}
+
+.key-hint--boxed {
+  padding: 1px 5px;
+  border: 1px solid $line-strong;
+  border-radius: $radius-key;
+  color: $color-text-dim;
+}
+
+.key-hint--inline {
+  font-size: 10.5px;
+  color: inherit;
+  opacity: 0.55;
+}

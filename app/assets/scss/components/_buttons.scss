@@ -1,0 +1,116 @@
+@use 'sass:list';
+@use '../abstracts' as *;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  background: transparent;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color $duration-base, background-color $duration-base, border-color $duration-base;
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+// height, horizontal padding, font size
+$button-sizes: (
+  xs: (28px, 10px, 12.5px),
+  sm: (30px, 12px, 12.5px),
+  md: (34px, 14px, 13px),
+  lg: (36px, 16px, 13px),
+  xl: (38px, 18px, 13.5px),
+  2xl: (40px, 20px, 14px),
+);
+
+@each $name, $size in $button-sizes {
+  .btn--#{$name} {
+    height: list.nth($size, 1);
+    padding: 0 list.nth($size, 2);
+    font-size: list.nth($size, 3);
+  }
+}
+
+.btn--md,
+.btn--lg {
+  gap: 10px;
+}
+
+// Variants set both states explicitly so links don't pick up the global amber hover.
+.btn--primary {
+  background: $color-text;
+  color: $color-bg;
+  font-weight: 500;
+  border-width: 0;
+
+  &:hover {
+    color: $color-bg;
+  }
+
+  &:disabled {
+    background: $color-disabled;
+  }
+}
+
+.btn--secondary {
+  border-color: $line-strong;
+  color: $color-text-subtle;
+
+  &:hover:not(:disabled) {
+    color: $color-text;
+  }
+}
+
+.btn--outline {
+  border-color: $line-emphasis;
+  color: $color-text-soft;
+
+  &:hover:not(:disabled) {
+    border-color: $line-focus;
+    color: $color-text-soft;
+  }
+}
+
+.btn--ghost {
+  border-width: 0;
+  color: $color-text-subtle;
+
+  &:hover:not(:disabled) {
+    color: $color-text;
+  }
+}
+
+.btn--sage {
+  border-width: 0;
+  background: $color-sage;
+  color: $color-bg;
+  font-weight: 600;
+  box-shadow: 0 0 30px -4px rgba(150, 170, 116, 0.5);
+
+  &:hover {
+    color: $color-bg;
+  }
+}
+
+.btn--icon {
+  aspect-ratio: 1;
+  padding: 0;
+  border-color: $line-strong;
+  color: $color-text-secondary;
+  font-size: 14px;
+
+  &:hover:not(:disabled) {
+    border-color: $line-hover;
+    color: $color-text-secondary;
+  }
+
+  &:disabled {
+    color: $color-disabled;
+  }
+}

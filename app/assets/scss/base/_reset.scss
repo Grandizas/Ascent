@@ -60,3 +60,8 @@ textarea::placeholder {
     transition-duration: 0.01ms !important;
   }
 }
+
+:focus-visible {
+  outline: 1px solid $line-focus;
+  outline-offset: 2px;
+}

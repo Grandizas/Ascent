@@ -1,0 +1,32 @@
+@use '../abstracts' as *;
+
+// Small colored dot for a mood or journey.
+.mood-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--dot-size, 7px);
+  height: var(--dot-size, 7px);
+  border-radius: 50%;
+  background: var(--dot-color, currentColor);
+}
+
+.mood-dot--glow {
+  box-shadow: 0 0 8px color-mix(in oklch, var(--dot-color) 60%, transparent);
+}
+
+// Rotated-square marker.
+.diamond {
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--diamond-size, 7px);
+  height: var(--diamond-size, 7px);
+  transform: rotate(45deg);
+}
+
+.diamond--hollow {
+  border: 1px solid var(--diamond-color, #{$color-text-subtle});
+}
+
+.diamond--filled {
+  background: var(--diamond-color, #{$color-sage});
+}

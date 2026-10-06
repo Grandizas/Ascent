@@ -1,0 +1,87 @@
+@use '../abstracts' as *;
+
+// ── Page header ───────────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.page-header__text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.page-header__eyebrow {
+  @include mono-label(11.5px);
+}
+
+.page-header__title {
+  @include serif-title(34px);
+}
+
+.page-header__description {
+  max-width: 56ch;
+  font-size: 14px;
+  color: $color-text-subtle;
+  text-wrap: pretty;
+}
+
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+// Today: Geist display title.
+.page-header--sans {
+  gap: 24px;
+
+  .page-header__title {
+    font-family: $font-sans;
+    font-weight: 400;
+    letter-spacing: $tracking-display;
+  }
+
+  .page-header__actions {
+    gap: 16px;
+  }
+}
+
+// ── Section label ─────────────────────────────────────────────────────
+.section-label--sm {
+  @include mono-label(10.5px, $color-text-label);
+}
+
+.section-label--md {
+  @include mono-label(11px, $color-text-faint);
+}
+
+// ── Section header ────────────────────────────────────────────────────
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-header__title {
+  @include serif-title(28px, 400);
+
+  letter-spacing: normal;
+}
+
+@each $size in (22, 26, 28, 30) {
+  .section-header__title--#{$size} {
+    font-size: #{$size}px;
+  }
+}
+
+.section-header__description {
+  font-size: 14px;
+  color: $color-text-subtle;
+  text-wrap: pretty;
+}

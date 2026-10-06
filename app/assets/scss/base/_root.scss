@@ -1,0 +1,13 @@
+@use '../abstracts' as *;
+
+// Runtime tokens: values that components bind dynamically (an entry's mood
+// color, journey dot colors) are read from these custom properties.
+:root {
+  @each $level, $color in $moods {
+    --mood-#{$level}: #{$color};
+  }
+
+  --color-accent: #{$color-accent};
+  --color-sage: #{$color-sage};
+  --color-text: #{$color-text};
+}

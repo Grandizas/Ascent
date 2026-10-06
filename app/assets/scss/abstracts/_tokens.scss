@@ -1,19 +1,83 @@
-// Design tokens. Phase 0 holds only what the base styles need;
-// the full set extracted from the design (PLAN.md §1.3–1.4) lands in phase 1.
+// Design tokens extracted from the design files (PLAN.md §1.3–1.4).
+// Compile-time only. Values that must be read at runtime are re-emitted as
+// CSS custom properties in base/_root.scss.
 
-// Surfaces
-$color-bg: #0B0B0C;
-$color-sidebar: #09090A;
+// ── Surfaces ────────────────────────────────────────────────────────────
+$color-bg: #0B0B0C;            // page; also the "halo" border around chart dots
+$color-sidebar: #09090A;       // sidebar, auth brand panel
+$color-surface: #111113;       // cards, inputs, segmented track
+$color-surface-raised: #141416; // mood tiles, future nodes
+$color-surface-hover: #18181B;
+$color-tooltip: #17171A;
+$color-avatar: #1E1D1B;
+$color-disabled: #3A3937;
 
-// Text
+// ── Text (brightest → dimmest) ──────────────────────────────────────────
 $color-text: #ECEAE5;
-$color-placeholder: #5E5C58;
+$color-text-quote: #E4E1DA;    // the user's own words
+$color-text-soft: #D9D6CF;
+$color-text-secondary: #C9C7C2;
+$color-text-muted: #9A9893;    // inactive nav, field labels
+$color-text-subtle: #8F8D88;   // descriptions, secondary links
+$color-text-faint: #7C7A75;    // eyebrows, meta
+$color-text-neutral: #737373;  // journey meta
+$color-text-label: #6E6C68;    // small section labels, inactive mobile tabs
+$color-text-dim: #64625E;
+$color-text-dimmer: #5E5C58;   // placeholders, tag lists
+$color-text-ghost: #55534F;    // footnotes, axis labels
+$color-text-axis: #4E4C49;
+$color-text-key: #4A4946;      // keycap letters in the sidebar
 
-// Accent
-$color-accent: oklch(0.83 0.1 72);
+$color-placeholder: $color-text-dimmer;
+
+// ── Hairlines (white alpha) ─────────────────────────────────────────────
+$line-faint: rgba(255, 255, 255, 0.04);
+$line-subtle: rgba(255, 255, 255, 0.05);
+$line-soft: rgba(255, 255, 255, 0.06);
+$line: rgba(255, 255, 255, 0.07);
+$line-strong: rgba(255, 255, 255, 0.08);
+$line-control: rgba(255, 255, 255, 0.1);
+$line-emphasis: rgba(255, 255, 255, 0.12);
+$line-hover: rgba(255, 255, 255, 0.2);
+$line-focus: rgba(255, 255, 255, 0.25);
+
+// Fills (white alpha)
+$fill-hover: rgba(255, 255, 255, 0.03);
+$fill-active: rgba(255, 255, 255, 0.05);
+$fill-selected: rgba(255, 255, 255, 0.08);
+
+// Warm fills (text color alpha)
+$warm-band: rgba(236, 234, 229, 0.05);
+$warm-selected-bg: rgba(236, 234, 229, 0.1);
+$warm-selected-border: rgba(236, 234, 229, 0.35);
+
+// ── Accents ─────────────────────────────────────────────────────────────
+$color-accent: oklch(0.83 0.1 72);        // brand dot, link hover, milestones
 $color-selection: oklch(0.8 0.1 72 / 0.3);
 
-// Typography
+$color-sage: rgb(150, 170, 116);          // journeys & progress
+$color-sage-light: rgb(168, 188, 134);    // orb highlight
+$color-sage-label: rgb(160, 182, 124);
+$color-sage-text: rgb(170, 190, 140);
+$color-sage-chip: #B6C59C;
+
+$color-positive: oklch(0.8 0.085 78);
+$color-negative: oklch(0.7 0.05 232);
+
+$color-error-border: oklch(0.66 0.08 30 / 0.7);
+$color-error-text: oklch(0.72 0.08 30);
+$color-error-form: oklch(0.75 0.07 30);
+
+// ── Mood scale (Sad → Great); mirrors MOODS in utils/mood.ts ───────────
+$moods: (
+  1: oklch(0.58 0.075 262),
+  2: oklch(0.64 0.06 232),
+  3: oklch(0.72 0.018 85),
+  4: oklch(0.77 0.085 78),
+  5: oklch(0.83 0.105 68),
+);
+
+// ── Typography ──────────────────────────────────────────────────────────
 $font-sans: 'Geist', system-ui, sans-serif;
 $font-mono: 'Geist Mono', ui-monospace, monospace;
 $font-serif: 'Inria Serif', Georgia, serif;
@@ -21,3 +85,38 @@ $font-quote: 'Newsreader', Georgia, serif;
 
 $font-size-base: 14px;
 $line-height-base: 1.45;
+
+$tracking-label: 0.08em;   // uppercase mono labels
+$tracking-title: -0.01em;  // serif titles, wordmark
+$tracking-display: -0.025em;
+
+// ── Radii ───────────────────────────────────────────────────────────────
+$radius-key: 4px;
+$radius-xs: 5px;
+$radius-sm: 6px;    // buttons, nav items, segmented items
+$radius-md: 8px;    // segmented track, tiles, tooltips
+$radius-lg: 10px;   // cards
+$radius-pill: 13px;
+
+// ── Layout ──────────────────────────────────────────────────────────────
+$sidebar-width: 232px;
+$main-padding: 30px 44px 72px;
+$main-padding-mobile: 18px 16px 108px; // bottom leaves room for the fixed tab bar
+
+$page-width-today: 920px;
+$page-width-timeline: 1180px;
+$page-width-journal: 860px;
+$page-width-journeys: 900px;
+$page-width-wizard: 760px;
+$page-width-insights: 880px;
+$page-width-review: 960px;
+$page-width-journey: 1240px;
+
+$z-tooltip: 5;
+$z-mobile-nav: 50;
+
+// ── Motion ──────────────────────────────────────────────────────────────
+$ease-out: ease-out;
+$duration-fast: 0.12s;
+$duration-base: 0.15s;
+$duration-slow: 0.3s;

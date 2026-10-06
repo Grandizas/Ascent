@@ -1,4 +1,44 @@
+@use 'tokens' as *;
+
 // Shared mixins. Breakpoint mixins live in _breakpoints.scss.
+
+// Uppercase mono label. Sizes seen in the design: 10.5 / 11 / 11.5px.
+@mixin mono-label($size: 11px, $color: $color-text-faint) {
+  font-family: $font-mono;
+  font-size: $size;
+  letter-spacing: $tracking-label;
+  text-transform: uppercase;
+  color: $color;
+}
+
+@mixin serif-title($size: 34px, $weight: 700) {
+  margin: 0;
+  font-family: $font-serif;
+  font-weight: $weight;
+  font-size: $size;
+  line-height: 1.1;
+  letter-spacing: $tracking-title;
+}
+
+// The design shows no focus styles; this keeps keyboard focus visible
+// without adding chrome for mouse users.
+@mixin focus-ring($offset: 2px) {
+  &:focus-visible {
+    outline: 1px solid $line-focus;
+    outline-offset: $offset;
+  }
+}
+
+@mixin button-reset {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
 
 @mixin visually-hidden {
   position: absolute;

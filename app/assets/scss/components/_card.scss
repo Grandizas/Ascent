@@ -1,0 +1,11 @@
+@use '../abstracts' as *;
+
+.card {
+  background: $color-surface;
+  border: 1px solid $line;
+  border-radius: $radius-lg;
+}
+
+.card--pad-sm { padding: 18px 20px; }
+.card--pad-md { padding: 20px 22px; }
+.card--pad-lg { padding: 22px 24px; }

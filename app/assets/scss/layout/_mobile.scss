@@ -1,0 +1,160 @@
+@use '../abstracts' as *;
+
+// ── Top bar (mobile) ──────────────────────────────────────────────────
+.mobile-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+
+  @include respond-to(desktop) {
+    display: none;
+  }
+
+  .brand__name {
+    letter-spacing: normal;
+  }
+}
+
+.mobile-top-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mobile-top-bar__link {
+  font-size: 12.5px;
+  color: $color-text-subtle;
+
+  &:hover {
+    color: $color-text-subtle;
+  }
+
+  &.is-active,
+  &.is-active:hover {
+    color: $color-text;
+  }
+}
+
+.mobile-top-bar__sign-out {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px; // design: 28px content-box + 1px borders
+  padding: 0 10px;
+  border: 1px solid $line-control;
+  border-radius: 14px;
+  font-size: 12.5px;
+  color: $color-text-muted;
+
+  &:hover {
+    color: $color-text-muted;
+  }
+
+  .avatar {
+    margin-left: -6px;
+  }
+}
+
+// ── Tab bar (mobile) ──────────────────────────────────────────────────
+.mobile-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: $z-mobile-nav;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 6px 4px calc(8px + env(safe-area-inset-bottom));
+  background: rgba(9, 9, 10, 0.94);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid $line-strong;
+
+  @include respond-to(desktop) {
+    display: none;
+  }
+}
+
+.mobile-nav__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 52px;
+  font-size: 11px;
+  color: $color-text-label;
+
+  &:hover {
+    color: $color-text-label;
+  }
+
+  &.is-active,
+  &.is-active:hover {
+    color: $color-text;
+    font-weight: 500;
+  }
+}
+
+.mobile-nav__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 14px;
+}
+
+// Glyphs are drawn with borders/shadows in currentColor, exactly as in the design.
+.mobile-nav__glyph {
+  display: block;
+  box-sizing: border-box;
+}
+
+.mobile-nav__glyph--today {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+
+  .is-active & {
+    border-color: $color-accent;
+  }
+}
+
+.mobile-nav__glyph--timeline {
+  width: 16px;
+  height: 10px;
+  border-bottom: 1.5px solid currentColor;
+  border-left: 1.5px solid currentColor;
+}
+
+.mobile-nav__glyph--journeys {
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.mobile-nav__glyph--insights {
+  width: 4px;
+  height: 12px;
+  background: currentColor;
+  box-shadow: 6px 3px 0 currentColor, -6px 5px 0 currentColor;
+}
+
+.mobile-nav__glyph--journal {
+  position: relative;
+  width: 14px;
+  height: 10px;
+  border-top: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 3px;
+    top: 3px;
+    height: 1.5px;
+    background: currentColor;
+  }
+}

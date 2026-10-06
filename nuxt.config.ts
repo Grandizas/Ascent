@@ -21,12 +21,17 @@ export default defineNuxtConfig({
     ...(hasSupabase ? [['@nuxtjs/supabase', { redirect: false, types: false }] as [string, object]] : []),
   ],
 
+  components: [
+    // Generic primitives are used everywhere, so they skip the folder prefix (<BaseButton>, not <UiBaseButton>).
+    { path: '~/components/ui', pathPrefix: false },
+    '~/components',
+  ],
+
   devtools: { enabled: true },
 
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      title: 'baseline',
       meta: [
         { name: 'theme-color', content: '#0B0B0C' },
         { name: 'color-scheme', content: 'dark' },

@@ -1,0 +1,32 @@
+@use '../abstracts' as *;
+
+// Page content column. Each page has its own max-width in the design.
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  min-width: 0;
+}
+
+$page-widths: (
+  today: $page-width-today,
+  timeline: $page-width-timeline,
+  journal: $page-width-journal,
+  journeys: $page-width-journeys,
+  wizard: $page-width-wizard,
+  insights: $page-width-insights,
+  review: $page-width-review,
+  journey: $page-width-journey,
+);
+
+@each $name, $width in $page-widths {
+  .page--#{$name} {
+    max-width: $width;
+  }
+}
+
+// Shown on routes whose design is not built yet.
+.page-placeholder {
+  font-size: 13px;
+  color: $color-text-ghost;
+}

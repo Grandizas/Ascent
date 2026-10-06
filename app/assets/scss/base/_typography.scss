@@ -1,0 +1,29 @@
+@use '../abstracts' as *;
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.t-mono {
+  font-family: $font-mono;
+}
+
+.t-serif {
+  font-family: $font-serif;
+}
+
+.t-quote {
+  font-family: $font-quote;
+  font-style: italic;
+}
+
+.t-pretty {
+  text-wrap: pretty;
+}
+
+.visually-hidden {
+  @include visually-hidden;
+}

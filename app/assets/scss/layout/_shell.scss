@@ -1,0 +1,88 @@
+@use '../abstracts' as *;
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: $color-bg;
+}
+
+.shell__main {
+  flex: 1;
+  min-width: 0;
+  padding: $main-padding;
+
+  @include respond-to(mobile) {
+    padding: $main-padding-mobile;
+  }
+}
+
+// ── Brand: a dot resting on a baseline ────────────────────────────────
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: $color-text;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
+.brand__mark {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 3px;
+    height: 1.5px;
+    background: $color-text;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    bottom: 7px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: $color-accent;
+  }
+}
+
+.brand__name {
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: $tracking-title;
+}
+
+// ── Avatar (initials) ─────────────────────────────────────────────────
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: $color-avatar;
+  color: $color-text-secondary;
+}
+
+.avatar--md {
+  width: 24px;
+  height: 24px;
+  border: 1px solid $line-strong;
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.avatar--sm {
+  width: 20px;
+  height: 20px;
+  font-size: 9.5px;
+}

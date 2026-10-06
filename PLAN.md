@@ -369,15 +369,20 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 - [x] `@nuxtjs/supabase` is installed. It registers itself only when those env vars exist, with redirect off; until then the app runs without it.
 - [x] `nuxt build` succeeds. Locally it uses the `node-server` preset; on Vercel, Nitro switches to the Vercel preset automatically.
 
-### Phase 1: Design foundation and shell
-- [ ] `abstracts/_tokens.scss` with every token in §1.3–1.4, plus `_root.scss`, `_reset.scss`, `_typography.scss` and `_animations.scss`.
-- [ ] `utils/mood.ts`: `MOODS`, `levelFromScore`, `moodColorContinuous` (`mc`), default scores, default tags.
-- [ ] `utils/chart.ts`: `smooth()` (Catmull-Rom with tension /6, as in the design).
-- [ ] `layouts/default.vue` with `AppSidebar`, `AppMobileTopBar` and `AppMobileNav`. Active state comes from the route.
-- [ ] UI primitives: `BaseButton`, `KeyHint`, `SegmentedControl`, `BaseCard`, `ChipButton`, `PageHeader`, `SectionLabel`, `SectionHeader`, `MoodDot`, `Diamond`.
-- [ ] Empty route stubs for every page so navigation works.
-- [ ] `useHotkeys` with global navigation (T/L/J/I/E/R).
-- **Done when:** the shell matches the design pixel-for-pixel on desktop and mobile on every route.
+### Phase 1: Design foundation and shell ✅
+- [x] `abstracts/_tokens.scss` (surfaces, the full text-grey scale, hairlines, accents, moods, type, radii, layout, motion), plus `base/_root.scss` (runtime CSS vars such as `--mood-1…5`), `_reset.scss`, `_typography.scss` and `_animations.scss`.
+- [x] `utils/mood.ts` (`MOODS`, `DEFAULT_TAGS`, `getMood`, `levelFromScore`, `moodColorContinuous`) and `utils/chart.ts` (`smoothPath`), both unit-tested.
+- [x] `layouts/default.vue` with `AppSidebar`, `AppMobileTopBar`, `AppMobileNav`, `AppBrand`, `AppAvatar` and `AppNavItem`. Active state comes from the route (`utils/navigation.ts`).
+  - On a journey detail page, the journey row in the sidebar is highlighted instead of "Journeys", as in the design. The mobile Journeys tab stays active.
+- [x] UI primitives in `components/ui/`, registered without the folder prefix: `BaseButton`, `KeyHint`, `SegmentedControl`, `BaseCard`, `ChipButton`, `PageHeader`, `SectionLabel`, `SectionHeader`, `Diamond`. `MoodDot` lives in `components/mood/`.
+- [x] Route stubs for every page: `/`, `/timeline`, `/journal`, `/journeys`, `/journeys/new`, `/journeys/[id]` (404 for unknown ids), `/insights`, `/review/[[year]]`, `/settings`, and a temporary `/login`.
+- [x] `useHotkeys`:
+  - Global shortcuts are T/L/J/I/E/R and `,`, plus `⇧Q` (goes to `/login` until phase 3). Page shortcuts are `N` on Journeys and `Esc` on the wizard.
+  - Shortcuts are ignored while typing and while Ctrl, Cmd or Alt is held.
+- [x] Shell data (profile, active journeys) comes from typed fixtures in `app/fixtures/shell.ts`, through `useProfile` and `useActiveJourneys`.
+- **Verified** against the design running locally, at 1280px and 375px:
+  - Sidebar, page header, primary button, segmented control, mobile top bar and tab bar all match the measured positions and sizes to within 0.5px.
+- **Design note: box-sizing.** The design files set no `box-sizing`. `<a>` elements and text inputs with a declared height and a border are therefore 2px taller than declared; `<button>`s are not (browsers default them to border-box). We use border-box globally, so those cases declare the rendered height. Example: the mobile sign-out pill is 30px.
 
 ### Phase 2: Today (UI with typed fixtures)
 - [ ] `MoodPicker`, `MoodLogPanel` (intensity, tags, note, Undo/Done, Esc/Enter), keys `1–5` and `N`, and the pulse and ring animations.
@@ -469,6 +474,8 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 | 7 | Section labels vary between 10.5px `#6E6C68` and 11px `#7C7A75`. | Keep both, as `SectionLabel` `size="sm" \| "md"`. |
 | 8 | The sidebar active-journey dot is amber, but journeys are sage elsewhere. | Store a per-journey `color` (the design shows amber and Low-blue dots); keep sage as the progress colour. |
 | 9 | Today v1 tower. | Not implemented (superseded). |
+| 10 | Selected chip background is warm .1 on Today and .08 on Journal. | One chip style, using Today's .1 value. |
+| 11 | Only the first active journey's dot glows in the sidebar. | Kept: the glow marks the first journey in the list. |
 
 ---
 
