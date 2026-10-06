@@ -233,7 +233,7 @@ supabase/
 
 ### 3.5 Environment
 - **`.env.example`** (committed, no values):
-  - `SUPABASE_URL`, `SUPABASE_KEY` (anon / publishable)
+  - `NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY` (anon / publishable)
   - Later: `ANTHROPIC_API_KEY` (server only)
   - Later: `FONTAWESOME_PACKAGE_TOKEN`, used only for install
 - **Service-role key:** never used in the browser. If a server route ever needs it, it lives in a server-only `runtimeConfig` key.
@@ -249,9 +249,10 @@ Entry: `app/assets/scss/_style.scss`, registered once in `nuxt.config.ts` as `cs
 assets/scss/
 ├── _style.scss          # entry: @use every partial below, in order
 ├── abstracts/
-│   ├── _index.scss      # @forward tokens + mixins (outputs NO CSS)
-│   ├── _tokens.scss     # SCSS maps/vars: colors, mood, type, radii, sizes, z, durations, breakpoints
-│   └── _mixins.scss     # mq(mobile), mono-label, hairline, focus-ring, visually-hidden, …
+│   ├── _index.scss      # @forward tokens + breakpoints + mixins (outputs NO CSS)
+│   ├── _tokens.scss     # SCSS maps/vars: colors, mood, type, radii, sizes, z, durations
+│   ├── _breakpoints.scss# $breakpoints map + @include respond-to(mobile | desktop | reduced-motion)
+│   └── _mixins.scss     # mono-label, hairline, focus-ring, visually-hidden, …
 ├── base/
 │   ├── _root.scss       # emits CSS custom properties from tokens (needed for runtime/inline use)
 │   ├── _reset.scss      # body, a, ::selection, placeholder, autofill, button reset
@@ -270,7 +271,7 @@ assets/scss/
 - **CSS custom properties** (from `_root.scss`) cover values that must be bound at runtime: the mood color of an entry, chart positions, progress percentages.
 - **Inline styles** are allowed **only** for data-driven custom properties and geometry, for example `:style="{ '--mood': color, left: x + '%' }"`. Everything static lives in SCSS.
 - **Class naming:** BEM-style (`.mood-picker__tile.is-selected`), scoped by component root class. No utility-class framework.
-- **Breakpoint:** `$bp-mobile: 760px` via `@include mq(mobile)`, matching the design. Mood colors, the `mc()` anchors and the sage/amber accents are exposed as both SCSS tokens and CSS vars. `mc()` itself is computed in TS (`utils/mood.ts`) because it is data-driven.
+- **Breakpoints:** never write a raw `@media` query. Use `@include respond-to(mobile) { … }` (`< 760px`, matching the design), `respond-to(desktop)` (`≥ 760px`) or `respond-to(reduced-motion)`. New ranges are added only to the `$breakpoints` map in `abstracts/_breakpoints.scss`; an unknown name fails the build. Mood colors, the `mc()` anchors and the sage/amber accents are exposed as both SCSS tokens and CSS vars. `mc()` itself is computed in TS (`utils/mood.ts`) because it is data-driven.
 - **Values:** the design uses many exact pixel values. Tokens capture the repeated ones (colors, radii, control heights, type sizes, gaps that recur). We do **not** round one-off values onto an invented scale if that would change the design.
 
 ---
@@ -358,13 +359,15 @@ Child tables carry `user_id` too, which keeps policies simple and fast. Schema c
 
 Each phase ends with the same verification: **side-by-side comparison with the design file in the browser at 1440px and 375px**, keyboard shortcuts checked, `nuxi typecheck` and lint clean.
 
-### Phase 0: Scaffold
-- [ ] `nuxi init` (Nuxt 4) with strict TS, ESLint and Vitest.
-- [ ] Install `sass` and `@nuxt/fonts`. Register the four families with the exact weights and styles the design loads.
-- [ ] Font Awesome plugin, `icons.ts` and `AppIcon`.
-- [ ] `.env.example` and `.gitignore` (`.env*`, `.npmrc` with secrets).
-- [ ] Install `@nuxtjs/supabase`, configured but with redirect off until Phase 3.
-- [ ] Confirm `nuxi build` produces a Vercel-compatible output.
+### Phase 0: Scaffold ✅
+- [x] Nuxt 4 (`app/` dir) with strict TS, `@nuxt/eslint` (stylistic) and Vitest (`npm run lint | typecheck | test`).
+  - **Nuxt is pinned to `4.5.2`.** 4.6.0 fails every SSR request with "Either manifest or precomputed data must be provided"; a clean, untouched scaffold fails the same way. Re-test before upgrading.
+- [x] `sass` with tokens/breakpoints/mixins injected through `additionalData`, and the `_style.scss` entry.
+- [x] `@nuxt/fonts` self-hosts the four families with the exact weights and styles the design loads (Newsreader upright 300 included, see §8 #6).
+- [x] Font Awesome: `utils/icons.ts` (the only FA import site), `AppIcon` and a plugin. `.npmrc.example` holds the Pro registry config, with the token read from the environment.
+- [x] `.env.example` (`NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY`). `.env*` is gitignored.
+- [x] `@nuxtjs/supabase` is installed. It registers itself only when those env vars exist, with redirect off; until then the app runs without it.
+- [x] `nuxt build` succeeds. Locally it uses the `node-server` preset; on Vercel, Nitro switches to the Vercel preset automatically.
 
 ### Phase 1: Design foundation and shell
 - [ ] `abstracts/_tokens.scss` with every token in §1.3–1.4, plus `_root.scss`, `_reset.scss`, `_typography.scss` and `_animations.scss`.

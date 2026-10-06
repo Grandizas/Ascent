@@ -1,0 +1,4 @@
+// Main SCSS entry, registered once in nuxt.config.ts (`css`).
+// Order: base → layout → components. Abstracts are @use'd by each partial.
+
+@use 'base/reset';

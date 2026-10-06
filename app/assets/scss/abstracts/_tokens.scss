@@ -1,0 +1,23 @@
+// Design tokens. Phase 0 holds only what the base styles need;
+// the full set extracted from the design (PLAN.md §1.3–1.4) lands in phase 1.
+
+// Surfaces
+$color-bg: #0B0B0C;
+$color-sidebar: #09090A;
+
+// Text
+$color-text: #ECEAE5;
+$color-placeholder: #5E5C58;
+
+// Accent
+$color-accent: oklch(0.83 0.1 72);
+$color-selection: oklch(0.8 0.1 72 / 0.3);
+
+// Typography
+$font-sans: 'Geist', system-ui, sans-serif;
+$font-mono: 'Geist Mono', ui-monospace, monospace;
+$font-serif: 'Inria Serif', Georgia, serif;
+$font-quote: 'Newsreader', Georgia, serif;
+
+$font-size-base: 14px;
+$line-height-base: 1.45;
