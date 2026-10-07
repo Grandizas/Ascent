@@ -345,7 +345,7 @@ Child tables carry `user_id` too, which keeps policies simple and fast. Schema c
 |---|---|---|
 | 1. Profiles (Phase 3) | `profiles(id pk → auth.users, display_name, timezone, created_at)` | Created on signup by a trigger. `timezone` drives day grouping. |
 | 2. Mood (Phase 3) | `mood_entries(id, user_id, logged_at timestamptz, level smallint 1–5, score smallint 1–10, note text, tags text[], created_at, updated_at)` | `level` is what the user tapped; `score` is the 1–10 intensity (defaults Sad 2, Low 4, Neutral 5, Good 7, Great 9, as in the design). **Tags are a `text[]` on the entry** rather than tag tables: every check-in stays a single atomic write, and analytics use `unnest()`. A per-user `tags` table can be added once tag management is designed. Indexes: `(user_id, logged_at desc)` and GIN on `tags`. |
-| 3. Journal (Phase 5) | `journal_entries(id, user_id, written_at, body)` | The design's "longer entries". Notes on check-ins stay on `mood_entries`. |
+| 3. Journal (Phase 5) | `journal_entries(id, user_id, written_at, body)` | The design's "longer entries". Notes on check-ins stay on `mood_entries`. The feed, month totals and tag counts come from the SQL functions `journal_feed`, `journal_months` and `journal_tags`. |
 | 4. Journeys (Phase 6) | `journeys(id, user_id, name, what_text, why_text, why_written_at, length_days, checkpoint_days int[], color, status, created_at)`; `journey_rules(id, journey_id, user_id, kind 'remove'\|'allow', label, suggested bool, position)`; `journey_attempts(id, journey_id, user_id, number, started_at, ended_at, end_reason 'setback'\|'paused'\|'completed'\|null)`; `journey_setbacks(id, attempt_id, user_id, occurred_at, note, outcome 'continued'\|'restarted')` | "A setback is recorded, not reset." **Continue** keeps the attempt running and logs a setback. **Restart** ends the attempt and opens attempt N+1. Previous attempts are always kept. |
 | Later | `ai_insights` cache, if AI summaries are added | Only when the AI phase starts. |
 
@@ -476,12 +476,35 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - Section heights differ only where the sample data differs.
 - **Still fixtures:** journeys (until phase 6). The page can't be seen without signing in; the visual checks used a temporary page with generated data, removed afterwards.
 
-### Phase 5: Journal
-- [ ] Migration 3.
-- [ ] Feed grouped by day with month headers, a day rail (mini bars, journey chips) and items (check-in, long entry, journey event).
-- [ ] Search, mood and tag filters, the "With notes / Every check-in" toggle, the active-filter line, "Show earlier days" paging (8 days per page; query by date window).
-- [ ] `OnThisDay` (same date 1 and 2 years ago).
-- [ ] `JournalComposer` (key `W`, word count, Newsreader textarea, Save to today / Discard).
+### Phase 5: Journal ✅
+- [x] **Migration 3** (`20261007120000_journal.sql`, applied):
+  - `journal_entries(id, user_id, written_at, body ≤ 20,000 chars and not blank)` with the usual owner-only RLS.
+  - Three read-only functions, security invoker so RLS still applies, and callable by signed-in users only:
+    - `journal_feed`: every check-in and longer entry on the next N local days that contain a match. Each row is flagged `matches`, because the day rail summarises the whole day.
+    - `journal_months`: entries, notes and average per month.
+    - `journal_tags`: most-used tags on noted check-ins.
+  - Filtering and grouping by the user's timezone live in that one SQL function, not twice. Search is a case-insensitive substring with `%`/`_` taken literally.
+  - A rolled-back two-user test checked timezone day boundaries, every filter, paging, RLS on insert and blank bodies; anonymous calls are refused.
+- [x] **Feed** (`JournalFeed`, `JournalMonthHeader`, `JournalDay`, `JournalCheckIn`, `JournalLongEntry`, `JournalEvent`, `MiniMoodBars`):
+  - Month headers show "N notes · avg X".
+  - The day rail shows Today/Yesterday/weekday, the date, one bar per check-in, "N check-ins · avg X" and the journeys running that day.
+  - Journey events come first in a day, then entries in time order. A tag on an entry filters by it.
+- [x] **Filters** (`JournalFilters`):
+  - Search (applied after 300 ms of quiet), With notes / Every check-in, and mood and tag chips. A selected tag outside the top 7 still gets a chip so it can be cleared.
+  - The active-filter line has "Clear filters".
+  - "Show earlier days" pages 8 days at a time; one extra day is fetched to know whether more exist.
+  - Filters live in the URL (`?q=run&tag=Gym&mood=good&all=1`). ⌘K on Today opens `/journal#search`, which focuses the search (Q5).
+- [x] **`OnThisDay`:** the same date 1 and 2 years ago, showing the noted check-in furthest from that day's average. 29 Feb is skipped in other years. Hidden while filtering.
+- [x] **`JournalComposer`:**
+  - `W` opens and focuses it; it shows a word count. The label is "Today · time · first active journey".
+  - "Save to today" inserts, clears the search/tag/mood filters and reloads the feed. A failed save keeps the text and says so; Discard drops it.
+- [x] **Logic** in `utils/analytics/journal.ts`, with tests: URL round-trip, filter line, word count, row grouping, journey events and chips, blocks, eyebrow, On this day. `utils/journey.ts` holds `CHECKPOINT_DAYS`, floor names and the attempt-suffix helpers, which Timeline now shares.
+- **Verified** against the running design (same seeded data, "today" 5 Oct 2026) at 1280px and 375px.
+  - Header, composer, search, segmented control, chip rows, On this day, month header, day rail, check-in rows and the more button match to within 0.5px.
+  - The only difference is the extra floor milestone (§8 #19).
+  - Signed out, the real page renders its error states: the feed message, and a failed save that keeps the draft. URL filters, the debounced search, clear and `#search` focus all work.
+- **Still fixtures:** journeys and their events (until phase 6). Days that only have a journey event don't appear yet; phase 6 adds them to `journal_feed`.
+- **Deferred (not designed):** editing or deleting a longer entry.
 
 ### Phase 6: Journeys (list and creation)
 - [ ] Migration 4.
@@ -551,6 +574,7 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 | 16 | Timeline's all-time chart marks only some journey starts (active ones plus Gym). | All time marks the active journeys; 30 days marks every start in range. |
 | 17 | Browsers abbreviate September as "Sept" in en-GB; the design shows "Sep". | Fixed month abbreviations everywhere. |
 | 18 | Timeline's week chart draws each day's average at the column centre, which only reads well with several check-ins a day; with one evening check-in the line floats away from its dot. | Each day's average sits at the mean time of that day's check-ins (on the dot for a single check-in, near the centre on busy days). |
+| 19 | Journal lists "Reached Day 3/7" floors only for Nicotine-free; other journeys' floors are left out. | Every journey's floors are listed (after day 1, before its last day, where the ending says it). |
 
 ---
 
