@@ -20,9 +20,12 @@
 @use 'components/markers';
 @use 'components/mood-picker';
 @use 'components/mood-log';
+@use 'components/line-chart';
 @use 'components/day-chart';
+@use 'components/heatmap';
 @use 'components/moments';
 @use 'components/fields';
 
 @use 'pages/today';
 @use 'pages/auth';
+@use 'pages/timeline';

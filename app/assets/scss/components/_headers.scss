@@ -35,6 +35,10 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
+  // Lets wide controls (segmented ranges) shrink and scroll instead of
+  // widening the page on phones.
+  min-width: 0;
+  max-width: 100%;
 }
 
 // Today: Geist display title.

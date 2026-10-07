@@ -404,7 +404,7 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - Header, card, tiles, open panel (intensity, chips, note), chart box, axes, lane, observation and moment rows match to within 0.5px.
   - All interactions were exercised: keys, Undo, Done, Esc, Enter, note and tooltip. There are no hydration warnings.
 - **Deferred:**
-  - A generic `MoodLineChart` base will be extracted in phase 4, once Timeline gives a second real use. Today's chart already uses the shared `smoothPath` and `scoreToY` helpers and the shared tooltip.
+  - ~~A generic `MoodLineChart` base will be extracted in phase 4.~~ Done in phase 4.
   - Note edits should be debounced when Supabase lands.
 
 ### Phase 3: Supabase, auth and real mood data ✅
@@ -444,13 +444,37 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - Enable the Google provider (Google Cloud OAuth client, redirect URI `https://wibtmzslxwrbymdksmse.supabase.co/auth/v1/callback`).
   - Decide whether email confirmation is on; both flows are handled.
 
-### Phase 4: Timeline
-- [ ] Period model (day, week, 30 days, year, all; offset), keys `D/W/M/Y/A` and `←/→`, prev/next disabled rules.
-- [ ] `TimelineStats`: average vs previous period, check-ins per day, stability (standard deviation) or range, most-logged tag.
-- [ ] Line modes (entries, daily averages with min/max band, monthly with p10/p90 band), journey start markers, tooltips (entry/day/month variants).
-- [ ] `YearHeatmap` with legend.
-- [ ] `JourneyLanes`, best/lowest moments, `PatternList` (time-of-day, best tag, low-note tag). Analytics live in `utils/analytics/` with unit tests.
-- Journeys data is still a fixture until Phase 6; lanes render from the same typed shape.
+### Phase 4: Timeline ✅
+- [x] **Periods** (`utils/analytics/timeline.ts`): day, week (7 days ending today), 30 days, calendar year, and all time.
+  - Each has an offset, a title ("Mon, 5 October", "Sep 29 – Oct 5", "2026", "Mar 2024 – today") and a short label ("Last 30 days", "That week"…).
+  - Earlier is disabled before the first check-in; later is disabled at today.
+  - The range and offset live in the URL (`?range=week&offset=2`).
+  - Keys: `D/W/M/Y/A` change the range, `←/→` step back and forward.
+- [x] **`TimelineStats`:**
+  - average with "↑/↓ x vs previous" (the same-length period before)
+  - check-ins, with a per-day rate over the days elapsed
+  - stability (spread of daily averages: Steady / Mixed / Variable) or, for one day, the range
+  - most-logged tag
+- [x] **Charts:**
+  - `MoodLineChart` is extracted (deferred from phase 2). `DayMoodChart` is rebuilt on it; a before/after check showed identical paths, points, axes, NOW marker and lane.
+  - Line modes: day (entries), week (daily-average line with entry dots in day columns), 30 days (daily averages with min/max band), and all time (monthly averages with a p10–p90 band).
+  - Journey start markers appear on the 30-day and all-time charts.
+  - Tooltips have entry, day and month variants, and each point's accessible name repeats its tooltip.
+  - The year is shown as `YearHeatmap`, with a Lower→Higher legend and today outlined.
+- [x] **Below the chart:** `JourneyLanes` (journeys overlapping the period, clipped to it), best and lowest moments (noted entries, repeated notes once), and `PatternList`.
+  - The patterns are time of day, the tag furthest above average, and the tag shared by the lowest noted entries, all worded as associations.
+- [x] **Data:**
+  - `useMoodHistory` adds `fetchRange`, which pages past Supabase's 1,000-row limit, and `fetchOverview` (total count and first check-in).
+  - Row mapping is shared in `utils/moodRow.ts`.
+  - The page (`pages/timeline.vue`) owns the URL, data and keys; `TimelineView` only draws.
+- [x] **Fixes found on the way:**
+  - Fixed month abbreviations ("Sep", not the browser's "Sept"), also used by the sidebar's "Since …".
+  - The hollow `Diamond` is content-box (9px across, as designed); Today's observation marker was 2px small.
+  - Header actions can shrink, so a wide segmented control scrolls instead of widening the page on phones.
+- **Verified** against the running design (Timeline.dc.html with the same "today", 5 Oct 2026) at 1280px and 375px.
+  - Matched to within 0.5px across all five ranges: header, eyebrow, title, step buttons, segmented control, stats cells, plot box, every axis label, divider count, dot sizes, heatmap grid/cells/months/legend/today, journey lanes, moment columns and pattern rows.
+  - Section heights differ only where the sample data differs.
+- **Still fixtures:** journeys (until phase 6). The page can't be seen without signing in; the visual checks used a temporary page with generated data, removed afterwards.
 
 ### Phase 5: Journal
 - [ ] Migration 3.
@@ -523,6 +547,10 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 | 12 | "Open timeline →" and "Journal →" links have no hover state in the design. | They brighten to `#ECEAE5` on hover, as other quiet controls do. |
 | 13 | Several design elements are content-box (chart dots, tooltip 260 + padding, lane 22 + border). | Kept at the design's rendered size; content-box is used locally where that's clearer. |
 | 14 | Auth shows "Continue with Google" and "Continue with Apple". | Apple removed by decision; Google keeps the design's button styling and spacing. |
+| 15 | Timeline's y-axis labels sit at fixed 7/39/70/93% while its gridlines are at 7.1/35.7/64.3/92.9%, so "7" and "4" float off their lines (same bug as Insights, #3). | Labels and gridlines come from one scale. |
+| 16 | Timeline's all-time chart marks only some journey starts (active ones plus Gym). | All time marks the active journeys; 30 days marks every start in range. |
+| 17 | Browsers abbreviate September as "Sept" in en-GB; the design shows "Sep". | Fixed month abbreviations everywhere. |
+| 18 | Timeline's week chart draws each day's average at the column centre, which only reads well with several check-ins a day; with one evening check-in the line floats away from its dot. | Each day's average sits at the mean time of that day's check-ins (on the dot for a single check-in, near the centre on busy days). |
 
 ---
 

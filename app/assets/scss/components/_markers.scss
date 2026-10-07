@@ -14,10 +14,12 @@
   box-shadow: 0 0 8px color-mix(in oklch, var(--dot-color) 60%, transparent);
 }
 
-// Rotated-square marker.
+// Rotated-square marker. Content-box: the design's 7px square plus its 1px
+// border (hollow variant) renders 9px across.
 .diamond {
   display: inline-block;
   flex-shrink: 0;
+  box-sizing: content-box;
   width: var(--diamond-size, 7px);
   height: var(--diamond-size, 7px);
   transform: rotate(45deg);
