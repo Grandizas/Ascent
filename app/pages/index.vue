@@ -62,7 +62,7 @@ useHotkeys({
   'escape': () => current.value && finish(),
   'mod+k': (event) => {
     event.preventDefault()
-    navigateTo('/journal')
+    navigateTo('/journal#search')
   },
 })
 </script>

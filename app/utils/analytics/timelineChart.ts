@@ -2,6 +2,7 @@
 // journey lanes and journey start markers. Pure data; components only draw.
 
 import type { JourneySpan } from '~/types/journey'
+import { journeyBaseName } from '~/utils/journey'
 import type { MoodEntry } from '~/types/mood'
 import { type AxisTick, dayAxisPosition, dayAxisStart, dayAxisTicks, percentile } from '~/utils/chart'
 import {
@@ -302,5 +303,5 @@ export function journeyMarkers(journeys: readonly JourneySpan[], period: Period)
   return journeys
     // All time shows only the journeys still running, to keep the chart readable.
     .filter(j => j.start >= period.start && j.start <= period.end && (period.range === 'month' || j.status === 'active'))
-    .map(j => ({ id: j.id, label: `${j.name.replace(/ · #\d+$/, '')} started`, x: x(j.start) }))
+    .map(j => ({ id: j.id, label: `${journeyBaseName(j.name)} started`, x: x(j.start) }))
 }

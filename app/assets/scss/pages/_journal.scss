@@ -1,0 +1,467 @@
+@use '../abstracts' as *;
+
+.journal {
+  gap: 28px;
+}
+
+// ── Composer ──────────────────────────────────────────────────────────
+.journal-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-color: $line-strong;
+}
+
+.journal-composer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.journal-composer__label {
+  @include mono-label(11px);
+}
+
+.journal-composer__words {
+  font-size: 12px;
+  color: $color-text-ghost;
+}
+
+.journal-composer__field {
+  width: 100%;
+  padding: 0;
+  resize: vertical;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-family: $font-quote;
+  font-size: 20px;
+  line-height: 1.55;
+  color: $color-text;
+}
+
+// Save failure (not in the design; uses the form-error tone).
+.journal-composer__error {
+  margin: 0;
+  font-size: 13px;
+  color: $color-error-form;
+}
+
+.journal-composer__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid $line-soft;
+}
+
+// ── Search, mode and filters ──────────────────────────────────────────
+.journal-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.journal-filters__bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 2px; // 14px to the chip rows, as designed
+  padding-bottom: 6px;
+  border-bottom: 1px solid $line;
+
+  > * {
+    margin-bottom: 10px;
+  }
+}
+
+.journal-search {
+  display: flex;
+  align-items: center;
+  flex: 1 1 240px;
+  gap: 10px;
+  height: 36px; // the design's 34px content box plus its border
+  padding: 0 12px;
+  background: $color-surface;
+  border: 1px solid $line;
+  border-radius: $radius-sm;
+
+  &:focus-within {
+    border-color: $line-hover;
+  }
+}
+
+// The design's drawn magnifier: a small ring.
+.journal-search__glyph {
+  flex-shrink: 0;
+  box-sizing: content-box;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid $color-text-dim;
+  border-radius: 50%;
+}
+
+.journal-search__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  appearance: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: $color-text;
+
+  &::-webkit-search-cancel-button,
+  &::-webkit-search-decoration {
+    appearance: none;
+  }
+}
+
+.journal-search__clear {
+  @include button-reset;
+  @include focus-ring;
+
+  font-size: 12px;
+  color: $color-text-dim;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
+.journal-filters__row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.journal-filters__label {
+  @include mono-label(10.5px, $color-text-label);
+
+  flex-shrink: 0;
+  width: 52px;
+}
+
+.journal-filters__tag:not(.is-selected) {
+  color: $color-text-muted;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
+.journal-filters__count {
+  font-family: $font-mono;
+  font-size: 10.5px;
+  color: $color-text-ghost;
+}
+
+.journal__active-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: -12px 0 0;
+  font-size: 13px;
+  color: $color-text-subtle;
+}
+
+.journal__clear-filters {
+  @include button-reset;
+  @include focus-ring;
+
+  color: $color-text-secondary;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+// ── On this day ───────────────────────────────────────────────────────
+.on-this-day {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.on-this-day__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px 28px;
+}
+
+.on-this-day__memory {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+}
+
+.on-this-day__meta {
+  font-size: 12px;
+  color: $color-text-subtle;
+}
+
+.on-this-day__year {
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: $color-text;
+}
+
+.on-this-day__quote {
+  margin: 0;
+  font-family: $font-quote;
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.4;
+  color: $color-text-soft;
+  text-wrap: pretty;
+}
+
+// ── Feed ──────────────────────────────────────────────────────────────
+.journal-feed {
+  display: flex;
+  flex-direction: column;
+}
+
+.journal-month {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 28px 0 6px;
+}
+
+.journal-month__label {
+  margin: 0;
+  font-family: $font-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: inherit;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $color-text-faint;
+}
+
+.journal-month__summary {
+  font-size: 12px;
+  color: $color-text-ghost;
+}
+
+.journal-day {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding: 24px 0;
+  border-top: 1px solid $line;
+}
+
+.journal-day__rail {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 118px;
+  align-self: flex-start;
+  gap: 8px;
+}
+
+.journal-day__weekday {
+  @include mono-label(11px);
+}
+
+.journal-day__date {
+  margin: 0;
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.journal-day__bars {
+  margin-top: 4px;
+}
+
+.journal-day__summary {
+  font-size: 12px;
+  color: $color-text-dim;
+}
+
+.journal-day__journey {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: $color-text-faint;
+
+  &::before {
+    content: '';
+    flex-shrink: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: $color-text-dim;
+  }
+
+  &.is-active {
+    color: $color-sage-chip;
+
+    &::before {
+      background: $color-sage;
+    }
+  }
+}
+
+.journal-day__items {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 320px;
+  gap: 2px;
+  min-width: 0;
+}
+
+// Check-in: time · mood, note, tags.
+.journal-check-in {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 14px;
+  padding: 12px 0;
+
+  // Without a note ("Every check-in" mode).
+  &.is-quiet {
+    padding: 6px 0;
+    opacity: 0.7;
+  }
+}
+
+.journal-check-in__time {
+  padding-top: 2px;
+  font-family: $font-mono;
+  font-size: 12.5px;
+  color: $color-text-subtle;
+}
+
+.journal-check-in__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.journal-check-in__mood {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--mood);
+}
+
+.journal-check-in__note {
+  max-width: 60ch;
+  margin: 0;
+  font-size: 16px;
+  color: $color-text-quote;
+  text-wrap: pretty;
+}
+
+.journal-check-in__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.journal-check-in__tag {
+  @include button-reset;
+  @include focus-ring;
+
+  font-size: 12px;
+  color: $color-text-dim;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
+.journal-long-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0 16px;
+}
+
+.journal-long-entry__meta {
+  font-family: $font-mono;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: $color-text-subtle;
+}
+
+.journal-long-entry__body {
+  max-width: 62ch;
+  margin: 0;
+  font-family: $font-quote;
+  font-size: 19px;
+  line-height: 1.6;
+  color: $color-text-quote;
+  white-space: pre-wrap;
+  text-wrap: pretty;
+}
+
+// Journey event: diamond, serif line, quiet detail.
+.journal-event {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.journal-event__text {
+  font-family: $font-serif;
+  font-size: 16px;
+  color: $color-text-secondary;
+}
+
+.journal-event__sub {
+  font-size: 12px;
+  color: $color-text-ghost;
+}
+
+.journal-event--start,
+.journal-event--milestone {
+  .journal-event__text {
+    color: $color-text;
+  }
+}
+
+.journal-event--start { --diamond-color: #{$color-sage}; }
+.journal-event--milestone { --diamond-color: #{$color-accent}; }
+.journal-event--completed { --diamond-color: #{$color-text}; }
+.journal-event--ended { --diamond-color: #{$color-text-dim}; }
+
+.journal-feed__empty {
+  margin: 0;
+  padding: 48px 0;
+  border-top: 1px solid $line;
+  font-size: 14px;
+  color: $color-text-faint;
+}
+
+.btn.journal-feed__more {
+  margin-top: 8px;
+  font-size: 13px;
+  color: $color-text-secondary;
+
+  &:hover:not(:disabled) {
+    border-color: $line-hover;
+    color: $color-text-secondary;
+  }
+}
+
+.journal-feed__error {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: $color-error-form;
+}

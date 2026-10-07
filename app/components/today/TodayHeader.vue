@@ -29,7 +29,7 @@ const lastCheckIn = computed(() => {
       <span class="today-header__last">Last check-in {{ lastCheckIn }}</span>
       <!-- No search palette is designed yet; ⌘K opens the Journal for now (PLAN.md Q5). -->
       <NuxtLink
-        to="/journal"
+        to="/journal#search"
         class="search-button"
         aria-keyshortcuts="Meta+K Control+K"
       >

@@ -24,8 +24,10 @@
 @use 'components/day-chart';
 @use 'components/heatmap';
 @use 'components/moments';
+@use 'components/mini-bars';
 @use 'components/fields';
 
 @use 'pages/today';
 @use 'pages/auth';
 @use 'pages/timeline';
+@use 'pages/journal';
