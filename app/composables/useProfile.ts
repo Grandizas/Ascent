@@ -1,3 +1,4 @@
+import { monthShort, zonedParts } from '~/utils/date'
 import type { Profile } from '~/types/profile'
 
 /** The signed-in user's profile (shared state). Loaded by the default layout. */
@@ -51,8 +52,8 @@ export function useProfile() {
 
   const memberSinceLabel = computed(() => {
     if (!profile.value) return ''
-    const date = new Date(profile.value.createdAt)
-    return `Since ${date.toLocaleString('en-GB', { month: 'short', year: 'numeric', timeZone: profile.value.timezone })}`
+    const { year, month } = zonedParts(new Date(profile.value.createdAt), profile.value.timezone)
+    return `Since ${monthShort(month)} ${year}`
   })
 
   return { profile, load, update, displayName, firstName, initials, memberSinceLabel }

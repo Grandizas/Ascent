@@ -64,3 +64,33 @@ export function placeTooltip(x: number, plotWidth: number, width: number, gap = 
   if (fitsRight) return x + gap
   return Math.min(Math.max(0, x - width / 2), plotWidth - width)
 }
+
+export interface AxisTick {
+  /** Position on the axis, 0–1. */
+  x: number
+  label: string
+  /** Rendered dimmer (09, 15, 21). */
+  minor: boolean
+  align: 'start' | 'center' | 'end'
+}
+
+/** Ticks every 3 hours on a `start`–24:00 day axis ("06:00" … "24:00"). */
+export function dayAxisTicks(start = DAY_AXIS_DEFAULT_START): AxisTick[] {
+  const startHour = start / 60
+  const ticks: AxisTick[] = []
+  for (let hour = startHour; hour <= 24; hour += 3) {
+    ticks.push({
+      x: (hour - startHour) / (24 - startHour),
+      label: `${String(hour).padStart(2, '0')}:00`,
+      minor: hour % 6 !== 0,
+      align: hour === startHour ? 'start' : hour === 24 ? 'end' : 'center',
+    })
+  }
+  return ticks
+}
+
+/** Value at percentile `p` (0–1) of `values`, nearest rank. */
+export function percentile(values: readonly number[], p: number): number {
+  const sorted = [...values].sort((a, b) => a - b)
+  return sorted[Math.min(sorted.length - 1, Math.max(0, Math.floor(p * (sorted.length - 1))))]!
+}

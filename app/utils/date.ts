@@ -123,3 +123,45 @@ export function formatElapsed(fromMs: number, toMs: number): string {
   if (minutes < 24 * 60) return `${Math.floor(minutes / 60)}h ${minutes % 60}m ago`
   return `${Math.floor(minutes / (24 * 60))}d ago`
 }
+
+const keyToUtc = (key: DayKey) => {
+  const [y, m, d] = key.split('-').map(Number) as [number, number, number]
+  return Date.UTC(y, m - 1, d)
+}
+
+/** Whole days from `from` to `to` (negative if `to` is earlier). */
+export function daysBetween(from: DayKey, to: DayKey): number {
+  return Math.round((keyToUtc(to) - keyToUtc(from)) / 86_400_000)
+}
+
+/** Day of week for a calendar day, Monday = 0 … Sunday = 6. */
+export function weekdayIndex(key: DayKey): number {
+  return (new Date(keyToUtc(key)).getUTCDay() + 6) % 7
+}
+
+/** Formats a calendar day (no time zone shifting), e.g. { weekday: 'short' } → "Mon". */
+export function formatDayKey(key: DayKey, options: Intl.DateTimeFormatOptions): string {
+  return new Date(keyToUtc(key)).toLocaleString('en-GB', { ...options, timeZone: 'UTC' })
+}
+
+// Fixed abbreviations: browsers differ ("Sep" vs "Sept"); the design uses these.
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const
+
+/** "Sep" for month 1–12. */
+export function monthShort(month: number): string {
+  return MONTHS_SHORT[month - 1]!
+}
+
+/** "Oct 5" — month first, as in the design's chart labels. */
+export function formatMonthDay(key: DayKey): string {
+  return `${monthShort(Number(key.slice(5, 7)))} ${Number(key.slice(8, 10))}`
+}
+
+/** "Mar 2024" for a day or "YYYY-MM". */
+export function formatMonthYear(key: string): string {
+  return `${monthShort(Number(key.slice(5, 7)))} ${key.slice(0, 4)}`
+}
+
+export function daysInMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate()
+}

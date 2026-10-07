@@ -1,0 +1,197 @@
+@use '../abstracts' as *;
+
+// Mood line chart (Today, Timeline; later Insights, Year review, Journeys).
+// The SVG is stretched to the plot box; points, labels and markers are HTML
+// overlays positioned in %. Heights come from the component (inline).
+.line-chart {
+  position: relative;
+  padding-left: 26px;
+}
+
+.line-chart__y {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  font-family: $font-mono;
+  font-size: 10.5px;
+  color: $color-text-axis;
+
+  span {
+    position: absolute;
+    transform: translateY(-50%);
+  }
+}
+
+.line-chart__plot {
+  position: relative;
+}
+
+.line-chart__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+
+  line,
+  path {
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.line-chart__grid {
+  stroke: $line-subtle;
+}
+
+.line-chart__divider {
+  stroke: $line-faint;
+}
+
+.line-chart__band {
+  fill: $warm-band;
+}
+
+.line-chart__average {
+  stroke: rgba(255, 255, 255, 0.18);
+  stroke-dasharray: 2 5;
+}
+
+.line-chart__area-stop {
+  stop-color: oklch(0.8 0.08 75);
+  stop-opacity: 0;
+}
+
+.line-chart__area-stop--top {
+  stop-opacity: 0.1;
+}
+
+.line-chart__line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: d 0.5s ease;
+}
+
+.line-chart__point {
+  @include button-reset;
+
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// Sizes are the design's content-box values (dot + dark halo border).
+.line-chart__dot {
+  box-sizing: content-box;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border: var(--dot-border) solid $color-bg;
+  border-radius: 50%;
+  background: var(--mood);
+  transition: all $duration-base;
+
+  .has-ring > & {
+    box-shadow: 0 0 0 1px var(--mood);
+  }
+
+  .is-hovered > & {
+    width: var(--dot-hover-size);
+    height: var(--dot-hover-size);
+  }
+}
+
+.line-chart__x {
+  position: relative;
+  height: 18px;
+  margin-top: 8px;
+  font-family: $font-mono;
+  font-size: 10.5px;
+  color: $color-text-axis;
+}
+
+.line-chart__x-label {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+
+  &.is-minor {
+    opacity: 0.55;
+  }
+
+  &.is-start {
+    transform: none;
+  }
+
+  &.is-end {
+    right: 0;
+    transform: none;
+  }
+}
+
+// ── Tooltip shared by the charts ──────────────────────────────────────
+// Content-box so width/padding read exactly as in the design (260 + padding).
+.chart-tooltip {
+  position: absolute;
+  z-index: $z-tooltip;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: content-box;
+  width: 260px;
+  max-width: calc(100% - 30px); // never wider than the plot on narrow screens
+  padding: 12px 14px;
+  background: $color-tooltip;
+  border: 1px solid $line-control;
+  border-radius: $radius-md;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.chart-tooltip__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.chart-tooltip__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+}
+
+.chart-tooltip__value,
+.chart-tooltip__meta {
+  font-family: $font-mono;
+  font-size: 12px;
+  color: $color-text-subtle;
+}
+
+.chart-tooltip__body {
+  font-size: 13px;
+  color: $color-text-secondary;
+  text-wrap: pretty;
+}
+
+.chart-tooltip__sub {
+  font-size: 11.5px;
+  color: $color-text-dim;
+}
+
+// Not in the design: a period with no check-ins.
+.line-chart__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: $color-text-ghost;
+}

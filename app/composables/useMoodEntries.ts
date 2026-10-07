@@ -1,20 +1,7 @@
-import type { Database } from '~/types/database.types'
 import type { MoodEntry, MoodEntryPatch } from '~/types/mood'
 import { addDays, dayKey, zonedDate } from '~/utils/date'
 import type { MoodLevel } from '~/utils/mood'
-
-type Row = Pick<Database['public']['Tables']['mood_entries']['Row'], 'id' | 'logged_at' | 'level' | 'score' | 'note' | 'tags'>
-
-const COLUMNS = 'id, logged_at, level, score, note, tags'
-
-const toEntry = (row: Row): MoodEntry => ({
-  id: row.id,
-  loggedAt: new Date(row.logged_at).toISOString(),
-  level: row.level as MoodLevel,
-  score: row.score,
-  note: row.note,
-  tags: row.tags,
-})
+import { MOOD_COLUMNS, toMoodEntry } from '~/utils/moodRow'
 
 const byLoggedAt = (a: MoodEntry, b: MoodEntry) => a.loggedAt.localeCompare(b.loggedAt)
 
@@ -96,11 +83,11 @@ export function useMoodEntries() {
     const from = zonedDate(addDays(dayKey(Date.now(), timeZone), -(days - 1)), 0, timeZone)
     const { data, error } = await supabase
       .from('mood_entries')
-      .select(COLUMNS)
+      .select(MOOD_COLUMNS)
       .gte('logged_at', from.toISOString())
       .order('logged_at')
     if (error) throw error
-    const loaded = (data ?? []).map(toEntry)
+    const loaded = (data ?? []).map(toMoodEntry)
     if (!import.meta.server) loaded.forEach(entry => confirmed.set(entry.id, { ...entry }))
 
     // Anything written while the query ran keeps its local (newer) version.
