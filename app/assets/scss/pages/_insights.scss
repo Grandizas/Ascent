@@ -1,0 +1,540 @@
+@use 'sass:map';
+@use '../abstracts' as *;
+
+$mood-low: map.get($moods, 2);
+$mood-good: map.get($moods, 4);
+
+.insights {
+  gap: 64px;
+
+  // A little wider here than on other pages (58ch), so the range control wraps below.
+  .page-header__description {
+    max-width: 58ch;
+  }
+}
+
+.insights__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.insights__hours {
+  margin-top: 8px;
+}
+
+.insights__table {
+  margin-top: 6px;
+}
+
+.insights__footnote {
+  max-width: 70ch;
+  margin: 0;
+  padding-top: 20px;
+  border-top: 1px solid $line-soft;
+  font-size: 12.5px;
+  color: $color-text-ghost;
+  text-wrap: pretty;
+}
+
+// ── Evidence meter: three short bars ──────────────────────────────────
+.evidence-meter {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.evidence-meter__bar {
+  width: 14px;
+  height: 3px;
+  border-radius: 1px;
+  background: $line-control;
+
+  &.is-on {
+    background: $color-text-secondary;
+  }
+}
+
+// ── Worth noticing ────────────────────────────────────────────────────
+.notices {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notices__label {
+  margin-bottom: 10px;
+}
+
+.notices__notice {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid $line-soft;
+}
+
+.notices__marker {
+  margin-top: 9px;
+}
+
+.notices__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.notices__text {
+  margin: 0;
+  font-family: $font-serif;
+  font-size: 20px;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.notices__evidence {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: $color-text-faint;
+}
+
+.notices__empty,
+.tag-table__empty,
+.journey-compare__empty {
+  margin: 0;
+  padding: 16px 0;
+  border-top: 1px solid $line-soft;
+  font-size: 14px;
+  color: $color-text-faint;
+}
+
+.tag-table__empty,
+.journey-compare__empty {
+  border-top: 0;
+}
+
+// ── Time of day ───────────────────────────────────────────────────────
+.hour-chart .line-chart__x {
+  color: $color-text-ghost;
+}
+
+.hour-chart__callout {
+  position: absolute;
+  padding: 0 4px;
+  background: $color-bg;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+
+  &.is-low {
+    color: $color-negative;
+  }
+
+  &.is-high {
+    color: $color-positive;
+  }
+}
+
+.weekday-bars {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid $line-soft;
+}
+
+.weekday-bars__day {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weekday-bars__track {
+  display: flex;
+  align-items: flex-end;
+  height: 64px;
+}
+
+.weekday-bars__bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  opacity: 0.55;
+
+  &.is-extreme {
+    opacity: 1;
+  }
+}
+
+.weekday-bars__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.weekday-bars__value {
+  font-family: $font-mono;
+  font-size: 12.5px;
+  color: $color-text-secondary;
+}
+
+.weekday-bars__name {
+  font-size: 11.5px;
+  color: $color-text-faint;
+}
+
+// ── Context: tags against the average ─────────────────────────────────
+.tag-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.tag-table__head,
+.tag-table__row {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr) minmax(0, 1fr) 64px;
+  column-gap: 12px;
+
+  @include respond-to(mobile) {
+    grid-template-columns: 92px minmax(0, 1fr) minmax(0, 1fr) 40px;
+  }
+}
+
+.tag-table__head {
+  padding-bottom: 8px;
+  border-bottom: 1px solid $line;
+  font-family: $font-mono;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $color-text-ghost;
+
+  .tag-table__count {
+    padding-right: 0;
+    font-size: inherit;
+    color: inherit;
+  }
+}
+
+.tag-table__lower-head {
+  padding-right: 6px;
+  text-align: right;
+}
+
+.tag-table__higher-head {
+  padding-left: 6px;
+}
+
+.tag-table__row {
+  @include button-reset;
+  @include focus-ring(-1px);
+
+  align-items: center;
+  height: 38px;
+  border-bottom: 1px solid $line-faint;
+  transition: background-color $duration-base;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  &.is-selected {
+    background: $line-faint;
+  }
+}
+
+.tag-table__name {
+  padding-left: 8px;
+  font-size: 13.5px;
+  color: $color-text-secondary;
+
+  .is-selected & {
+    color: $color-text;
+  }
+}
+
+.tag-table__lower,
+.tag-table__higher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.tag-table__lower {
+  justify-content: flex-end;
+  border-right: 1px solid $line-emphasis;
+}
+
+.tag-table__value {
+  font-family: $font-mono;
+  font-size: 11.5px;
+  color: $color-text-faint;
+}
+
+.tag-table__bar {
+  flex-shrink: 0;
+  height: 10px;
+  background: $mood-good;
+
+  .tag-table__lower & {
+    border-radius: 2px 0 0 2px;
+    background: $mood-low;
+  }
+
+  .tag-table__higher & {
+    border-radius: 0 2px 2px 0;
+  }
+
+  .is-evidence-1 & { opacity: 0.45; }
+  .is-evidence-2 & { opacity: 0.75; }
+}
+
+.tag-table__count {
+  padding-right: 8px;
+  font-family: $font-mono;
+  font-size: 11.5px;
+  color: $color-text-dim;
+  text-align: right;
+}
+
+.tag-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tag-detail__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tag-detail__title {
+  margin: 0;
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: inherit;
+}
+
+.tag-detail__evidence {
+  font-size: 12px;
+  color: $color-text-dim;
+}
+
+.tag-detail__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 18px;
+}
+
+.tag-detail__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tag-detail__value {
+  font-size: 26px;
+  font-weight: 300;
+
+  &.is-muted { color: $color-text-subtle; }
+  &.is-positive { color: $color-positive; }
+  &.is-negative { color: $color-negative; }
+}
+
+.tag-detail__label {
+  font-size: 12px;
+  color: $color-text-faint;
+}
+
+.tag-detail__notes {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid $line-soft;
+}
+
+.tag-detail__note {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 40px;
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid $line-faint;
+}
+
+.tag-detail__when {
+  font-family: $font-mono;
+  font-size: 12px;
+  color: $color-text-faint;
+}
+
+.tag-detail__text {
+  font-size: 14.5px;
+  color: $color-text-soft;
+  text-wrap: pretty;
+}
+
+.tag-detail__score {
+  font-family: $font-mono;
+  font-size: 12px;
+  color: $color-text-subtle;
+  text-align: right;
+}
+
+// ── Journeys: before and during ───────────────────────────────────────
+.journey-compare {
+  display: flex;
+  flex-direction: column;
+}
+
+.journey-compare__head,
+.journey-compare__row {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) 80px;
+  gap: 16px;
+
+  @include respond-to(mobile) {
+    grid-template-columns: 108px minmax(0, 1fr) 52px;
+  }
+}
+
+.journey-compare__head {
+  padding-bottom: 8px;
+  border-bottom: 1px solid $line;
+  font-family: $font-mono;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $color-text-ghost;
+}
+
+.journey-compare__scale {
+  position: relative;
+  height: 14px;
+}
+
+.journey-compare__tick {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.journey-compare__change {
+  text-align: right;
+
+  .journey-compare__row & {
+    font-family: $font-mono;
+    font-size: 12.5px;
+    color: $color-positive;
+  }
+
+  .journey-compare__row.is-down & {
+    color: $color-negative;
+  }
+}
+
+.journey-compare__row {
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid $line-faint;
+}
+
+.journey-compare__title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.journey-compare__name {
+  font-size: 13.5px;
+}
+
+.journey-compare__status {
+  font-size: 11.5px;
+  color: $color-text-dim;
+}
+
+.journey-compare__track {
+  position: relative;
+  height: 16px;
+}
+
+.journey-compare__axis,
+.journey-compare__segment,
+.journey-compare__before,
+.journey-compare__during {
+  position: absolute;
+  top: 50%;
+}
+
+.journey-compare__axis {
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: $line-soft;
+}
+
+.journey-compare__segment {
+  height: 2px;
+  background: oklch(0.77 0.085 78 / 0.5);
+  transform: translateY(-50%);
+
+  .is-down & {
+    background: oklch(0.64 0.06 232 / 0.5);
+  }
+}
+
+.journey-compare__before {
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid $color-text-subtle;
+  border-radius: 50%;
+  background: $color-bg;
+  transform: translate(-50%, -50%);
+}
+
+.journey-compare__during {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: $mood-good;
+  transform: translate(-50%, -50%);
+
+  .is-down & {
+    background: $mood-low;
+  }
+}
+
+.journey-compare__legend {
+  display: flex;
+  gap: 18px;
+  padding-top: 12px;
+  font-size: 12px;
+  color: $color-text-dim;
+}
+
+.journey-compare__key {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// The legend's dots sit in the text flow.
+.journey-compare__before.is-key,
+.journey-compare__during.is-key {
+  position: static;
+  transform: none;
+}
+
+.journey-compare__during.is-key {
+  width: 9px;
+  height: 9px;
+}

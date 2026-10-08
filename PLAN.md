@@ -561,14 +561,30 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - Section positions differ only by the next-floor paragraph's copy (§8 #24).
   - The real page needs a signed-in session; the visual check used a temporary page fed with design-shaped data, removed afterwards.
 
-### Phase 8: Insights
-- [ ] Range 30d / 90d / 1y / all.
-- [ ] Worth noticing, with an evidence meter: strong (≥120 entries), some (≥40), otherwise early signal.
-- [ ] Hour chart with IQR band, lowest/highest callouts, weekday bars.
-- [ ] Tag context diverging table with selected-tag card ("change over the next 4 hours").
-- [ ] Before/during dumbbell rows.
-- [ ] Footer disclaimer.
-- All maths goes in `utils/analytics/insights.ts` with tests.
+### Phase 8: Insights ✅
+- [x] **Logic** (`utils/analytics/insights.ts`, tested) is a direct port of the design's Insights script:
+  - Ranges: 30 days, 90 days, 1 year, all time.
+  - Evidence levels: strong (≥ 120 entries), some (≥ 40), early signal.
+  - By-hour averages for 07:00–24:00 with the middle-half band (≥ 3 entries per hour), and weekday averages Monday first.
+  - Tag stats (≥ 5 uses): against the average, without the tag, and the change over the next four hours, measured from the check-in before.
+  - Up to four "Worth noticing" notices: the low stretch of the day, a rise after a tag, tiredness in the lowest entries, a heavy tag, and best/hardest weekday.
+  - Before/during rows for attempts with enough check-ins.
+  - All wording stays with associations.
+- [x] **Page** (`pages/insights.vue` and `InsightsView`):
+  - The range lives in the URL (`?range=30|365|all`; 90 days by default).
+  - The server computes the model and sends only that, not every check-in in range.
+  - Components:
+    - `NoticeList` with `EvidenceMeter`
+    - `HourChart` on `MoodLineChart` (custom y scale, band, average, and Lowest/Highest callouts; points get the shared tooltip)
+    - `WeekdayBars`
+    - `TagContextTable` (diverging rows, selectable) with `TagDetailCard`
+    - `JourneyComparison` (dumbbell rows on the fixed 3.5–7.5 scale)
+  - Empty states for each section.
+- [x] **Today's observation** is the strongest notice of the last 30 days ("Observation from N entries · a pattern, not a proven cause"). `fixtures/` is now empty and removed.
+- **Verified** against the running design with the design's own seeded data ("today" 5 Oct 2026) at 1280px and 375px:
+  - Every computed number and sentence is identical: notices, evidence counts, callouts, weekdays, all tag rows, the selected-tag card, and every journey row. This also holds after picking another tag and switching to 30 days.
+  - Positions match to within 0.5px, down to the page height.
+  - The only intended difference is the y labels, which now sit on their gridlines (§8 #3).
 
 ### Phase 9: Year review
 - [ ] Year selector (partial years flagged).
@@ -598,7 +614,7 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 |---|---|---|
 | 1 | Brand in the design is **"baseline"**; the repo is **Ascent**. | Keep the design's wordmark until told otherwise, behind one constant (`APP_NAME`). **Q1** |
 | 2 | The journey detail uses its own greys: `#8E8C88`, `#737373`, `rgba(59,59,59,.6)` dividers. Other pages use `#8F8D88` and white-alpha hairlines. | Keep them as journey-scoped tokens (faithful), unless you prefer unifying. **Q2** |
-| 3 | Insights Y-axis labels are placed at fixed percentages that don't match the gridlines. | Derive both from the same scale (a bug fix, not a redesign). |
+| 3 | Insights Y-axis labels are placed at fixed percentages that don't match the gridlines. | Derived from the same scale as the gridlines (done in phase 8). |
 | 4 | The Year review sidebar shortcut colour is not highlighted when active, unlike other pages. | Use the consistent active style. |
 | 5 | Year review is not in the mobile bottom nav; it is reachable only from the top bar. | Keep as designed. |
 | 6 | The Year reflection uses Newsreader upright 300, but only italic is loaded. | Load the upright 300 weight so it renders as intended. |
@@ -623,6 +639,7 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 | 25 | The phase averages (5.8 / 4.6 / 5.2 / 6.1) and the summary sentence are fixed text that doesn't match the plotted days. | Computed from the entries; the summary is templated (lowest day, stretch above the baseline). |
 | 26 | On mobile the floor column stays sticky while the content wraps below it, so it would cover the sections as you scroll. | Sticky on desktop only. |
 | 27 | "Often reported vs Your entries" is designed for nicotine only (cravings, focus, sleep). | Other journeys show mood vs before, the lowest time of day and sleep, in the same hedged wording. |
+| 28 | Today's observation is fixed copy about the nicotine journey. | The strongest Insights notice from the last 30 days, with its entry count and "a pattern, not a proven cause". |
 
 ---
 
