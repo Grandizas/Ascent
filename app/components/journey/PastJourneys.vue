@@ -15,9 +15,10 @@ defineProps<{ rows: readonly PastRow[] }>()
     >
       Behind you
     </SectionLabel>
-    <div
+    <NuxtLink
       v-for="row in rows"
       :key="row.id"
+      :to="`/journeys/${row.journeyId}`"
       class="past-journeys__row"
     >
       <span class="past-journeys__title">
@@ -33,7 +34,7 @@ defineProps<{ rows: readonly PastRow[] }>()
         :class="`is-${changeTone(row.change)}`"
         :aria-label="`Mood change ${formatChange(row.change)}`"
       >{{ formatChange(row.change) }}</span>
-    </div>
+    </NuxtLink>
     <p class="past-journeys__note">
       Right column: change in average mood during the journey, against the 30 days before it.
     </p>

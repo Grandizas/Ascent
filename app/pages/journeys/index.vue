@@ -5,7 +5,7 @@ useHead({ title: 'Journeys' })
 
 const now = useNow()
 const timeZone = useTimezone()
-const { journeys, fetchAttemptMoods } = useJourneys()
+const { journeys, loadFailed, fetchAttemptMoods } = useJourneys()
 
 const { data: moodList } = await useAsyncData('journey-moods', fetchAttemptMoods)
 const moods = computed(() => new Map((moodList.value ?? []).map(m => [m.attemptId, m])))
@@ -57,7 +57,14 @@ useHotkeys({ n: () => navigateTo('/journeys/new') })
         :row="row"
       />
       <p
-        v-if="!climbing.length"
+        v-if="loadFailed"
+        class="journeys__empty"
+        role="alert"
+      >
+        Couldn’t load your journeys. Reload the page to try again.
+      </p>
+      <p
+        v-else-if="!climbing.length"
         class="journeys__empty"
       >
         Nothing in progress. Start a journey to change one thing on purpose and see what it does to how you feel.

@@ -24,9 +24,12 @@ export interface NewJourney {
 export function useJourneys() {
   const supabase = useSupabaseClient()
   const journeys = useState<Journey[]>('journeys', () => [])
+  /** Set when the last load failed, so pages can tell "couldn't load" from "doesn't exist". */
+  const loadFailed = useState('journeys-load-failed', () => false)
 
   async function load(): Promise<Journey[]> {
     const { data, error } = await supabase.from('journeys').select(JOURNEY_COLUMNS).order('created_at')
+    loadFailed.value = !!error
     if (error) throw error
     journeys.value = data.map(row => ({
       id: row.id,
@@ -54,7 +57,11 @@ export function useJourneys() {
     return journeys.value
   }
 
-  /** Creates the journey, its rules and attempt #1 together, then reloads the list. Returns the new id. */
+  /**
+   * Creates the journey, its rules and attempt #1 together, then reloads the list. Returns the new id.
+   * Once the database call succeeds the journey exists: a failed reload is only logged, so the
+   * caller never offers a retry that would create it twice.
+   */
   async function create(input: NewJourney): Promise<string> {
     const { data, error } = await supabase.rpc('create_journey', {
       p_name: input.name.trim(),
@@ -67,7 +74,7 @@ export function useJourneys() {
       p_rules: [...input.rules].sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'remove' ? -1 : 1)).map(r => ({ ...r })),
     })
     if (error) throw error
-    await load()
+    await load().catch(reloadError => console.error('[journeys] reload after create failed', reloadError))
     return data
   }
 
@@ -84,5 +91,5 @@ export function useJourneys() {
     }))
   }
 
-  return { journeys, load, create, fetchAttemptMoods }
+  return { journeys, loadFailed, load, create, fetchAttemptMoods }
 }

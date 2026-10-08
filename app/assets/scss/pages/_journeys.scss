@@ -219,6 +219,14 @@
   gap: 16px;
   padding: 16px 0;
   border-top: 1px solid $line-soft;
+  color: $color-text;
+  transition: background-color $duration-base;
+
+  // Links to the journey, like the rows above (no hover is designed here).
+  &:hover {
+    background: rgba(255, 255, 255, 0.015);
+    color: $color-text;
+  }
 }
 
 .past-journeys__title {

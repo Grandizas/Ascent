@@ -3,9 +3,13 @@ import { journeySummary } from '~/utils/journey'
 
 const route = useRoute()
 const now = useNow()
-const { journeys } = useJourneys()
+const { journeys, loadFailed } = useJourneys()
 
 const found = computed(() => journeys.value.find(j => j.id === route.params.id))
+// A failed load (by the layout) isn't a missing journey.
+if (loadFailed.value) {
+  throw createError({ statusCode: 503, statusMessage: 'Couldn’t load your journeys' })
+}
 if (!found.value) {
   throw createError({ statusCode: 404, statusMessage: 'Journey not found' })
 }
