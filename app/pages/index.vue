@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { todayObservationFixture } from '~/fixtures/insights'
 import type { ChartLane } from '~/types/chart'
 import type { MoodEntry } from '~/types/mood'
+import { insightsModel } from '~/utils/analytics/insights'
 import { summarizeScores } from '~/utils/analytics/stats'
 import { addDays, dayKey, minuteOfDay } from '~/utils/date'
 import { climbingJourneys, removesNicotine } from '~/utils/journey'
@@ -34,6 +34,13 @@ const todayEntries = computed(() => onDay(today.value))
 const yesterdayEntries = computed(() => onDay(addDays(today.value, -1)))
 const recent = computed(() => [...todayEntries.value].reverse().slice(0, 5))
 const lastEntry = computed(() => [...entries.value].sort(byLoggedAt).at(-1) ?? null)
+// The strongest pattern of the last 30 days, worded as an association.
+const observation = computed(() => {
+  const from = addDays(today.value, -29)
+  const recent = entries.value.filter(e => dayKey(e.loggedAt, timeZone.value) >= from)
+  const notice = insightsModel(recent, timeZone.value).notices[0]
+  return notice && { text: notice.text, caption: `Observation from ${notice.entries} ${notice.entries === 1 ? 'entry' : 'entries'} · a pattern, not a proven cause` }
+})
 const monthAverage = computed(() => {
   const from = addDays(today.value, -29)
   return summarizeScores(entries.value.filter(e => dayKey(e.loggedAt, timeZone.value) >= from).map(e => e.score)).average
@@ -103,7 +110,7 @@ useHotkeys({
         :fresh-id="current?.id"
         :pulse-key="pulseKey"
         :lane="cravingsLane"
-        :observation="todayObservationFixture"
+        :observation="observation"
       />
 
       <RecentMoments
