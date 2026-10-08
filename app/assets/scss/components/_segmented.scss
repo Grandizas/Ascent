@@ -48,6 +48,14 @@
   font-size: 12.5px;
 }
 
+.segmented--mono-lg .segmented__item {
+  height: 32px;
+  padding: 0 14px;
+  font-family: $font-mono;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
 .segmented__key {
   font-size: 10px;
   color: $color-text-axis;

@@ -2,9 +2,13 @@
 import { PRIMARY_NAV, SETTINGS_NAV } from '~/utils/navigation'
 
 const { profile, load, update } = useProfile()
+const { load: loadJourneys } = useJourneys()
 const { signOut } = useAuth()
 
-await useAsyncData('profile', () => load())
+await Promise.all([
+  useAsyncData('profile', () => load()),
+  useAsyncData('journeys', () => loadJourneys()),
+])
 
 // Keep the stored timezone in step with the browser (first visit, travel), so
 // server-side analytics agree with what the user sees.

@@ -26,8 +26,11 @@
 @use 'components/moments';
 @use 'components/mini-bars';
 @use 'components/fields';
+@use 'components/stepper';
+@use 'components/journey';
 
 @use 'pages/today';
 @use 'pages/auth';
 @use 'pages/timeline';
 @use 'pages/journal';
+@use 'pages/journeys';

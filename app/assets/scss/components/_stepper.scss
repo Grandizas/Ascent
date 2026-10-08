@@ -1,0 +1,108 @@
+@use '../abstracts' as *;
+
+// ── Breadcrumb: Parent / Current ──────────────────────────────────────
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: $color-text-subtle;
+}
+
+.breadcrumb__link {
+  color: $color-text-subtle;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
+.breadcrumb__separator {
+  color: $color-text-key;
+}
+
+.breadcrumb__current {
+  color: $color-text;
+}
+
+// ── Stepper: dot · label — dot · label … ──────────────────────────────
+.stepper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepper__step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stepper__dot {
+  width: 7px;
+  height: 7px;
+  border: 1px solid $line-hover;
+  border-radius: 50%;
+  transition: all $duration-slow;
+
+  .is-done & {
+    border-width: 0;
+    background: $color-sage;
+  }
+
+  .is-current & {
+    width: 9px;
+    height: 9px;
+    border-width: 0;
+    background: $color-text;
+  }
+}
+
+.stepper__label {
+  font-size: 12px;
+  color: $color-text-ghost;
+
+  .is-done & {
+    color: $color-text-muted;
+  }
+
+  .is-current & {
+    color: $color-text;
+  }
+}
+
+.stepper__line {
+  width: 22px;
+  height: 1px;
+  background: $line-control;
+}
+
+// ── Check square (floor toggles) ──────────────────────────────────────
+.check-square {
+  @include button-reset;
+  @include focus-ring;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid $line-emphasis;
+  border-radius: $radius-xs;
+  font-size: 12px;
+  line-height: 1;
+  color: $color-bg;
+  text-align: center;
+
+  &.is-checked {
+    background: $color-text;
+  }
+
+  &.is-locked {
+    cursor: default;
+  }
+}

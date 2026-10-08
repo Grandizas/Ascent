@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { journeyHistoryFixture } from '~/fixtures/journeys'
 import type { FeedDay, JournalFilters } from '~/types/journal'
 import {
   filtersFromQuery, filtersToQuery, filterSummary, isFiltering, journalBlocks, journalEyebrow, NO_FILTERS, onThisDay, onThisDayDates,
 } from '~/utils/analytics/journal'
 import { dayKey, formatTime } from '~/utils/date'
+import { journeySpans } from '~/utils/journey'
 
 useHead({ title: 'Journal' })
 
@@ -13,6 +13,7 @@ const router = useRouter()
 const timeZone = useTimezone()
 const now = useNow()
 const activeJourneys = useActiveJourneys()
+const { journeys: allJourneys } = useJourneys()
 const { fetchFeed, fetchMonths, fetchTags, addLongEntry } = useJournal()
 const { fetchRange } = useMoodHistory()
 
@@ -88,8 +89,7 @@ async function showEarlier() {
   }
 }
 
-// Phase 6: real journeys replace this fixture.
-const journeys = computed(() => journeyHistoryFixture(today.value))
+const journeys = computed(() => journeySpans(allJourneys.value, now.value, timeZone.value))
 
 const blocks = computed(() => journalBlocks(days.value, {
   filters: filters.value,

@@ -4,6 +4,7 @@ import type { ChartLane } from '~/types/chart'
 import type { MoodEntry } from '~/types/mood'
 import { summarizeScores } from '~/utils/analytics/stats'
 import { addDays, dayKey, minuteOfDay } from '~/utils/date'
+import { climbingJourneys, removesNicotine } from '~/utils/journey'
 import { DEFAULT_TAGS, type MoodLevel } from '~/utils/mood'
 
 useHead({ title: 'Today' })
@@ -20,8 +21,10 @@ await useAsyncData('mood-entries:recent', async () => {
   return true
 })
 
-// Phase 6: comes from the active journey's tracked tag instead of a constant.
-const cravingsLane: ChartLane = { tag: 'Nicotine craving', label: 'Cravings', itemLabel: 'Craving' }
+// Cravings are drawn under the chart while a running journey removes nicotine.
+const { journeys } = useJourneys()
+const CRAVINGS_LANE: ChartLane = { tag: 'Nicotine craving', label: 'Cravings', itemLabel: 'Craving' }
+const cravingsLane = computed(() => (climbingJourneys(journeys.value, now.value).some(removesNicotine) ? CRAVINGS_LANE : undefined))
 
 const today = computed(() => dayKey(now.value, timeZone.value))
 const byLoggedAt = (a: MoodEntry, b: MoodEntry) => a.loggedAt.localeCompare(b.loggedAt)
