@@ -13,6 +13,16 @@ export interface JourneyRule {
 
 export type AttemptEndReason = 'setback' | 'paused' | 'completed'
 
+/** continued — the attempt kept running · restarted — it ended and the next began. */
+export type SetbackOutcome = 'continued' | 'restarted'
+
+export interface JourneySetback {
+  id: string
+  occurredAt: string
+  note: string
+  outcome: SetbackOutcome
+}
+
 export interface JourneyAttempt {
   id: string
   number: number
@@ -20,6 +30,8 @@ export interface JourneyAttempt {
   startedAt: string
   endedAt: string | null
   endReason: AttemptEndReason | null
+  /** Oldest first. */
+  setbacks: JourneySetback[]
 }
 
 /** A journey with its rules and attempts. Matches the `journeys` row and its children. */

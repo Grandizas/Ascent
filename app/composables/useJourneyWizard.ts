@@ -1,4 +1,3 @@
-import type { JourneyRule, RuleKind } from '~/types/journey'
 import { EXAMPLE_WHAT, EXAMPLE_WHY, plannedCheckpoints, suggestRules, wizardFloors } from '~/utils/journeyWizard'
 
 export const WIZARD_STEPS = ['What', 'Why', 'Rules', 'Floors'] as const
@@ -8,7 +7,7 @@ export function useJourneyWizard() {
   const step = ref(1)
   const what = ref('')
   const why = ref('')
-  const rules = ref<JourneyRule[]>([])
+  const { rules, flipRule, deleteRule, addRule } = useRuleList()
   const reading = ref(false)
   const name = ref('')
   const lengthDays = ref(90)
@@ -58,22 +57,6 @@ export function useJourneyWizard() {
 
   function back() {
     step.value = Math.max(1, step.value - 1)
-  }
-
-  /** Moves a rule to the other column; it's the user's own choice from then on. */
-  function flipRule(index: number) {
-    rules.value = rules.value.map((rule, i) => (i === index ? { ...rule, kind: rule.kind === 'remove' ? 'allow' : 'remove', suggested: false } : rule))
-  }
-
-  function deleteRule(index: number) {
-    rules.value = rules.value.filter((_, i) => i !== index)
-  }
-
-  /** Adds a rule unless the column already has it. */
-  function addRule(kind: RuleKind, label: string) {
-    const text = label.trim().slice(0, 80)
-    if (!text || rules.value.some(r => r.kind === kind && r.label.toLowerCase() === text.toLowerCase())) return
-    rules.value = [...rules.value, { kind, label: text, suggested: false }]
   }
 
   function toggleFloor(day: number) {

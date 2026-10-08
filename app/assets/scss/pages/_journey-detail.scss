@@ -1,0 +1,645 @@
+@use '../abstracts' as *;
+
+// Journey page ("the climb"): header, the floor column, and the sections beside it.
+.page--journey {
+  gap: 0;
+  margin: 0 auto;
+  width: 100%;
+}
+
+// ── Header ────────────────────────────────────────────────────────────
+.journey-detail__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 26px;
+  border-bottom: 1px solid $journey-line;
+  text-align: center;
+}
+
+.journey-detail__crumbs {
+  align-self: flex-start;
+  margin-bottom: 14px;
+}
+
+.journey-detail__day {
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  color: $color-text-neutral;
+}
+
+.journey-detail__title {
+  margin: 0;
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.journey-detail__meta {
+  font-size: 12.5px;
+  color: $color-text-neutral;
+}
+
+.journey-detail__body {
+  display: flex;
+
+  @include respond-to(mobile) {
+    flex-wrap: wrap;
+  }
+}
+
+.journey-detail__floors {
+  position: sticky;
+  top: 0;
+  flex: 0 0 281px; // the design's 280px column plus its border
+  align-self: flex-start;
+  padding: 44px 0 40px;
+  border-right: 1px solid $journey-line;
+
+  @include respond-to(mobile) {
+    position: static;
+    flex: 1 1 100%;
+    border-right: 0;
+  }
+}
+
+.journey-detail__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 320px;
+  gap: 64px;
+  min-width: 0;
+  // 780px of content, plus the left padding (the design's box is content-box).
+  max-width: calc(780px + clamp(28px, 5vw, 72px));
+  padding: 52px 0 64px clamp(28px, 5vw, 72px);
+}
+
+.journey-detail__footnote {
+  margin: 0;
+  font-size: 12.5px;
+  color: $color-text-dimmer;
+}
+
+.journey-detail__why {
+  max-width: 30em;
+  margin: 0;
+  font-family: $font-quote;
+  font-style: italic;
+  font-size: 24px;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+// ── The climb: floors from the top down ───────────────────────────────
+.journey-climb {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journey-climb__floor,
+.journey-climb__tube-row,
+.journey-climb__pill-row {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  align-items: center;
+}
+
+.journey-climb__tube-row {
+  padding: 12px 0;
+}
+
+.journey-climb__pill-row {
+  padding: 10px 0;
+}
+
+.journey-climb__node {
+  display: flex;
+  justify-content: center;
+}
+
+.journey-climb__circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(56, 56, 56, 0.4) 0%, rgba(89, 89, 89, 0.4) 100%);
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.55);
+  transition: all 1s ease;
+
+  .is-next &,
+  .is-current & {
+    width: 119px;
+    height: 119px;
+    font-size: 19px;
+    color: #FFFFFF;
+  }
+
+  .is-next & {
+    background: radial-gradient(circle at 50% 35%, $color-sage-light, $color-sage 70%);
+    box-shadow: 0 0 70px -6px rgba(150, 170, 116, 0.45);
+  }
+
+  .is-current & {
+    background: linear-gradient(180deg, rgb(150, 171, 116) 0%, rgb(89, 89, 89) 100%);
+  }
+
+  .is-future & {
+    border: 1px dashed $line-emphasis;
+    background: rgba(56, 56, 56, 0.2);
+    color: rgba(255, 255, 255, 0.45);
+  }
+}
+
+.journey-climb__note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: -8px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: $color-text-neutral;
+
+  .is-future & { color: $color-text-dimmer; }
+  .is-next & { color: rgba(170, 190, 140, 0.85); }
+  .is-current & { color: $journey-text; }
+}
+
+.journey-climb__line {
+  flex-shrink: 0;
+  width: 18px;
+  height: 1px;
+  background: rgba(115, 115, 115, 0.6);
+
+  .is-future & { background: $line-emphasis; }
+  .is-next & { background: rgba(150, 173, 114, 0.5); }
+  .is-current & { background: rgba(150, 173, 114, 0.4); }
+}
+
+.journey-climb__pill {
+  width: 10px;
+  height: 25px;
+  border-radius: 10px;
+  background: rgba(89, 89, 89, 0.3);
+}
+
+// Progress tube between the current floor and the next.
+.journey-climb__tube {
+  position: relative;
+  width: 14px;
+  height: 280px;
+  border-radius: 10px;
+  background: rgba(150, 170, 116, 0.1);
+}
+
+.journey-climb__fill {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(150, 170, 116, 0.12) 0%, $color-sage 100%);
+  box-shadow: 0 0 24px rgba(150, 170, 116, 0.25);
+  transition: height 1.2s ease;
+}
+
+.journey-climb__tick,
+.journey-climb__here {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transform: translateY(50%);
+}
+
+.journey-climb__tick {
+  right: calc(100% + 12px);
+  font-size: 10px;
+  color: rgba(140, 140, 136, var(--tick-alpha));
+
+  &.is-yesterday {
+    font-size: 11px;
+  }
+
+  &.is-today {
+    font-size: 12.5px;
+    color: rgba(150, 173, 114, 0.85);
+  }
+}
+
+.journey-climb__tick-line {
+  width: 12px;
+  height: 1px;
+  background: currentColor;
+
+  .is-today & {
+    width: 20px;
+  }
+}
+
+.journey-climb__here {
+  left: calc(100% + 10px);
+  font-size: 11px;
+  color: $journey-sage;
+}
+
+.journey-climb__here-line {
+  width: 20px;
+  height: 1px;
+  background: rgba(150, 173, 114, 0.7);
+}
+
+// ── Sections ──────────────────────────────────────────────────────────
+.journey-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.journey-section--why {
+  gap: 16px;
+}
+
+.journey-section--notes {
+  gap: 6px;
+
+  .journey-section__label {
+    margin-bottom: 8px;
+  }
+
+  .journey-section__title {
+    margin-bottom: 12px;
+  }
+}
+
+.journey-section__label {
+  @include mono-label(11px, $color-text-label);
+}
+
+.journey-section__title {
+  margin: 0;
+  font-family: $font-serif;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: $journey-title;
+
+  &.is-muted {
+    color: $journey-title-muted;
+  }
+}
+
+// Next floor: expectation and evidence.
+.journey-next__expectation {
+  max-width: 56ch;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.45;
+  color: $journey-text;
+  text-wrap: pretty;
+}
+
+.journey-next__table {
+  display: flex;
+  flex-direction: column;
+  margin-top: 14px;
+}
+
+.journey-next__columns,
+.journey-next__cells {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  column-gap: 24px;
+}
+
+.journey-next__columns {
+  padding-bottom: 10px;
+  border-bottom: 1px solid $journey-line;
+}
+
+.journey-next__column {
+  @include mono-label(11px, $color-text-label);
+
+  &.is-yours {
+    color: $journey-sage;
+  }
+}
+
+.journey-next__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 0;
+  border-bottom: 1px solid $journey-line-faint;
+}
+
+.journey-next__topic {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.journey-next__cells {
+  row-gap: 4px;
+  font-size: 14px;
+  text-wrap: pretty;
+}
+
+.journey-next__common {
+  color: $journey-text;
+}
+
+.journey-next__yours {
+  color: $color-text-soft;
+}
+
+// Daily mood chart.
+.journey-chart {
+  position: relative;
+  margin-top: 10px;
+  padding-left: 30px;
+}
+
+.journey-chart__plot {
+  position: relative;
+  height: 170px;
+}
+
+.journey-chart__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+
+  line,
+  path {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.journey-chart__grid {
+  stroke: rgba(150, 173, 114, 0.2);
+  stroke-dasharray: 3 4;
+}
+
+.journey-chart__axis {
+  stroke: rgba(150, 173, 114, 0.45);
+}
+
+.journey-chart__guide {
+  stroke: rgba(150, 173, 114, 0.18);
+}
+
+.journey-chart__baseline {
+  stroke: rgba(255, 255, 255, 0.28);
+  stroke-dasharray: 2 5;
+}
+
+.journey-chart__line {
+  stroke: #FFFFFF;
+  stroke-width: 1.5;
+}
+
+.journey-chart__y {
+  position: absolute;
+  left: -30px;
+  font-size: 13px;
+  color: $color-text-neutral;
+  transform: translateY(-50%);
+}
+
+.journey-chart__before {
+  position: absolute;
+  left: 8px;
+  padding: 0 4px;
+  background: $color-bg;
+  font-size: 11px;
+  color: $journey-text;
+  transform: translateY(-140%);
+}
+
+.journey-chart__dot {
+  position: absolute;
+  box-sizing: content-box; // 6px (10px for today) plus the 2px halo, as designed
+  width: 6px;
+  height: 6px;
+  border: 2px solid $color-bg;
+  border-radius: 50%;
+  background: $color-text-soft;
+  transform: translate(-50%, -50%);
+
+  &.is-below {
+    background: $color-text-neutral;
+  }
+
+  &.is-latest {
+    width: 10px;
+    height: 10px;
+    background: $color-sage;
+  }
+}
+
+.journey-chart__marks {
+  position: relative;
+  height: 18px;
+  margin-top: 10px;
+}
+
+.journey-chart__mark {
+  position: absolute;
+  font-size: 11px;
+  white-space: nowrap;
+  color: $color-text-neutral;
+  transform: translateX(-50%);
+
+  &.is-current {
+    color: $journey-sage;
+  }
+}
+
+.journey-chart__summary {
+  max-width: 62ch;
+  margin: 0;
+  font-size: 14px;
+  color: $journey-text;
+  text-wrap: pretty;
+}
+
+.journey-phases {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid $journey-line;
+}
+
+.journey-phases__phase {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.journey-phases__value {
+  font-size: 22px;
+  font-weight: 300;
+  color: $color-text-soft;
+
+  .is-before & { color: $journey-text; }
+  .is-current & { color: $color-sage-text; }
+}
+
+.journey-phases__label {
+  font-size: 12px;
+  color: $color-text-neutral;
+}
+
+// Notes along the way.
+.journey-notes__note {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 44px;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid $journey-line-soft;
+}
+
+.journey-notes__day {
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: $journey-text;
+}
+
+.journey-notes__text {
+  font-size: 15px;
+  color: $color-text-soft;
+  text-wrap: pretty;
+}
+
+.journey-notes__score {
+  font-family: $font-mono;
+  font-size: 12px;
+  color: $color-text-neutral;
+  text-align: right;
+}
+
+.journey-notes__empty {
+  margin: 0;
+  padding: 14px 0;
+  border-top: 1px solid $journey-line-soft;
+  font-size: 14px;
+  color: $journey-text;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────
+.journey-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 22px;
+  border-top: 1px solid $journey-line;
+}
+
+.btn.journey-actions__edit {
+  color: $journey-text;
+
+  &:hover:not(:disabled) {
+    color: $color-text;
+  }
+}
+
+.journey-actions__note {
+  font-size: 12.5px;
+  color: $color-text-dimmer;
+}
+
+// Record a setback / Edit rules (not in the design; composer and wizard styles).
+.journey-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-color: $line-strong;
+}
+
+.journey-panel__note {
+  width: 100%;
+  padding: 0;
+  resize: vertical;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-family: $font-quote;
+  font-size: 18px;
+  line-height: 1.5;
+  color: $color-text;
+}
+
+.journey-panel__choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.journey-choice {
+  @include button-reset;
+  @include focus-ring;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  background: $color-surface-raised;
+  border: 1px solid $line-strong;
+  border-radius: $radius-md;
+  transition: border-color $duration-base;
+
+  &:hover:not(:disabled) {
+    border-color: $line-hover;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+.journey-choice__title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.journey-choice__text {
+  font-size: 13px;
+  color: $journey-text;
+  text-wrap: pretty;
+}
+
+.journey-panel__error {
+  margin: 0;
+  font-size: 13px;
+  color: $color-error-form;
+}
+
+.journey-panel__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid $line-soft;
+}

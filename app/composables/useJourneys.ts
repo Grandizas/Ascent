@@ -1,11 +1,15 @@
-import type { AttemptEndReason, Journey, JourneyRule } from '~/types/journey'
+import type { AttemptEndReason, Journey, JourneyRule, SetbackOutcome } from '~/types/journey'
 import { type AttemptMood, isJourneyColor, type JourneyColor } from '~/utils/journey'
 
 const JOURNEY_COLUMNS = `
   id, name, what_text, why_text, why_written_at, length_days, checkpoint_days, color, created_at,
   journey_rules (kind, label, suggested, position),
-  journey_attempts (id, number, started_at, ended_at, end_reason)
+  journey_attempts (id, number, started_at, ended_at, end_reason, journey_setbacks (id, occurred_at, note, outcome))
 `
+
+/** Removed first, then allowed, so stored positions keep each column's order. */
+const ordered = (rules: readonly JourneyRule[]) =>
+  [...rules].sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'remove' ? -1 : 1)).map(r => ({ kind: r.kind, label: r.label, suggested: r.suggested }))
 
 export interface NewJourney {
   name: string
@@ -52,6 +56,9 @@ export function useJourneys() {
           startedAt: new Date(a.started_at).toISOString(),
           endedAt: a.ended_at ? new Date(a.ended_at).toISOString() : null,
           endReason: a.end_reason as AttemptEndReason | null,
+          setbacks: [...a.journey_setbacks]
+            .sort((x, y) => x.occurred_at.localeCompare(y.occurred_at))
+            .map(s => ({ id: s.id, occurredAt: new Date(s.occurred_at).toISOString(), note: s.note, outcome: s.outcome as SetbackOutcome })),
         })),
     }))
     return journeys.value
@@ -70,12 +77,33 @@ export function useJourneys() {
       p_length_days: input.lengthDays,
       p_checkpoint_days: input.checkpoints,
       p_color: input.color,
-      // Removed first, then allowed, so positions keep each column's order.
-      p_rules: [...input.rules].sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'remove' ? -1 : 1)).map(r => ({ ...r })),
+      p_rules: ordered(input.rules),
     })
     if (error) throw error
-    await load().catch(reloadError => console.error('[journeys] reload after create failed', reloadError))
+    await reloadAfterWrite()
     return data
+  }
+
+  /** After a successful write the change is saved: a failed reload is only logged, never offered as a retry. */
+  async function reloadAfterWrite() {
+    await load().catch(reloadError => console.error('[journeys] reload after a change failed', reloadError))
+  }
+
+  /**
+   * Records a setback on the running attempt. "continued" keeps the climb;
+   * "restarted" ends the attempt and opens the next, in one transaction.
+   */
+  async function recordSetback(journeyId: string, note: string, outcome: SetbackOutcome): Promise<void> {
+    const { error } = await supabase.rpc('record_setback', { p_journey_id: journeyId, p_note: note.trim(), p_outcome: outcome })
+    if (error) throw error
+    await reloadAfterWrite()
+  }
+
+  /** Replaces the journey's rules (removed first, then allowed). */
+  async function replaceRules(journeyId: string, rules: readonly JourneyRule[]): Promise<void> {
+    const { error } = await supabase.rpc('replace_journey_rules', { p_journey_id: journeyId, p_rules: ordered(rules) })
+    if (error) throw error
+    await reloadAfterWrite()
   }
 
   /** Average mood during each attempt and in the 30 days before it. */
@@ -91,5 +119,5 @@ export function useJourneys() {
     }))
   }
 
-  return { journeys, loadFailed, load, create, fetchAttemptMoods }
+  return { journeys, loadFailed, load, create, recordSetback, replaceRules, fetchAttemptMoods }
 }
