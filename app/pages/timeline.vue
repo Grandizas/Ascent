@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { journeyHistoryFixture } from '~/fixtures/journeys'
 import { periodFor, previousPeriod, TIMELINE_RANGES, type TimelineRange } from '~/utils/analytics/timeline'
 import { dayKey } from '~/utils/date'
+import { journeySpans } from '~/utils/journey'
 
 useHead({ title: 'Timeline' })
 
@@ -10,6 +10,7 @@ const router = useRouter()
 const timeZone = useTimezone()
 const now = useNow()
 const { fetchRange, fetchOverview } = useMoodHistory()
+const { journeys: allJourneys } = useJourneys()
 
 // ── Period (kept in the URL so back/forward and reloads work) ─────────
 const isRange = (value: unknown): value is TimelineRange => TIMELINE_RANGES.some(r => r.value === value)
@@ -38,8 +39,7 @@ const { data } = await useAsyncData(
   },
 )
 
-// Phase 6: real journeys replace this fixture.
-const journeys = computed(() => journeyHistoryFixture(today.value))
+const journeys = computed(() => journeySpans(allJourneys.value, now.value, timeZone.value))
 
 const view = useTemplateRef<{ older: () => void, newer: () => void }>('view')
 useHotkeys({

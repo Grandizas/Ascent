@@ -44,6 +44,133 @@ export type Database = {
         }
         Relationships: []
       }
+      journey_attempts: {
+        Row: {
+          created_at: string
+          end_reason: string | null
+          ended_at: string | null
+          id: string
+          journey_id: string
+          number: number
+          started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_reason?: string | null
+          ended_at?: string | null
+          id?: string
+          journey_id: string
+          number: number
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          end_reason?: string | null
+          ended_at?: string | null
+          id?: string
+          journey_id?: string
+          number?: number
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'journey_attempts_journey_id_user_id_fkey'
+            columns: ['journey_id', 'user_id']
+            isOneToOne: false
+            referencedRelation: 'journeys'
+            referencedColumns: ['id', 'user_id']
+          },
+        ]
+      }
+      journey_rules: {
+        Row: {
+          created_at: string
+          id: string
+          journey_id: string
+          kind: string
+          label: string
+          position: number
+          suggested: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          journey_id: string
+          kind: string
+          label: string
+          position?: number
+          suggested?: boolean
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          journey_id?: string
+          kind?: string
+          label?: string
+          position?: number
+          suggested?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'journey_rules_journey_id_user_id_fkey'
+            columns: ['journey_id', 'user_id']
+            isOneToOne: false
+            referencedRelation: 'journeys'
+            referencedColumns: ['id', 'user_id']
+          },
+        ]
+      }
+      journeys: {
+        Row: {
+          checkpoint_days: number[]
+          color: string
+          created_at: string
+          id: string
+          length_days: number
+          name: string
+          updated_at: string
+          user_id: string
+          what_text: string
+          why_text: string
+          why_written_at: string
+        }
+        Insert: {
+          checkpoint_days: number[]
+          color?: string
+          created_at?: string
+          id?: string
+          length_days: number
+          name: string
+          updated_at?: string
+          user_id?: string
+          what_text?: string
+          why_text: string
+          why_written_at?: string
+        }
+        Update: {
+          checkpoint_days?: number[]
+          color?: string
+          created_at?: string
+          id?: string
+          length_days?: number
+          name?: string
+          updated_at?: string
+          user_id?: string
+          what_text?: string
+          why_text?: string
+          why_written_at?: string
+        }
+        Relationships: []
+      }
       mood_entries: {
         Row: {
           created_at: string
@@ -109,6 +236,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_journey: {
+        Args: {
+          p_checkpoint_days: number[]
+          p_color: string
+          p_length_days: number
+          p_name: string
+          p_rules?: Json
+          p_what: string
+          p_why: string
+        }
+        Returns: string
+      }
       is_valid_timezone: { Args: { tz: string }, Returns: boolean }
       journal_feed: {
         Args: {
@@ -146,6 +285,16 @@ export type Database = {
         Returns: {
           entries: number
           tag: string
+        }[]
+      }
+      journey_attempt_moods: {
+        Args: never
+        Returns: {
+          attempt_id: string
+          before_average: number
+          before_entries: number
+          during_average: number
+          during_entries: number
         }[]
       }
     }

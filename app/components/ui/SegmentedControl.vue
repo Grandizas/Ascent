@@ -13,8 +13,9 @@ withDefaults(defineProps<{
   /**
    * mono — uppercase Geist Mono, 28px (Timeline, Insights, Year review)
    * sans — Geist 12.5px, 26px (Journal)
+   * mono-lg — Geist Mono 12px, 32px (journey length)
    */
-  variant?: 'mono' | 'sans'
+  variant?: 'mono' | 'sans' | 'mono-lg'
 }>(), { variant: 'mono' })
 
 const model = defineModel<T>({ required: true })

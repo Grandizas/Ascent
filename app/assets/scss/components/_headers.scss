@@ -76,6 +76,9 @@
 .section-header__title {
   @include serif-title(28px, 400);
 
+  // Section titles keep the body line-height in the design (only the journey
+  // detail sets 1.1 on its own headings).
+  line-height: $line-height-base;
   letter-spacing: normal;
 }
 

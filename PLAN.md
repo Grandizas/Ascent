@@ -346,7 +346,7 @@ Child tables carry `user_id` too, which keeps policies simple and fast. Schema c
 | 1. Profiles (Phase 3) | `profiles(id pk → auth.users, display_name, timezone, created_at)` | Created on signup by a trigger. `timezone` drives day grouping. |
 | 2. Mood (Phase 3) | `mood_entries(id, user_id, logged_at timestamptz, level smallint 1–5, score smallint 1–10, note text, tags text[], created_at, updated_at)` | `level` is what the user tapped; `score` is the 1–10 intensity (defaults Sad 2, Low 4, Neutral 5, Good 7, Great 9, as in the design). **Tags are a `text[]` on the entry** rather than tag tables: every check-in stays a single atomic write, and analytics use `unnest()`. A per-user `tags` table can be added once tag management is designed. Indexes: `(user_id, logged_at desc)` and GIN on `tags`. |
 | 3. Journal (Phase 5) | `journal_entries(id, user_id, written_at, body)` | The design's "longer entries". Notes on check-ins stay on `mood_entries`. The feed, month totals and tag counts come from the SQL functions `journal_feed`, `journal_months` and `journal_tags`. |
-| 4. Journeys (Phase 6) | `journeys(id, user_id, name, what_text, why_text, why_written_at, length_days, checkpoint_days int[], color, status, created_at)`; `journey_rules(id, journey_id, user_id, kind 'remove'\|'allow', label, suggested bool, position)`; `journey_attempts(id, journey_id, user_id, number, started_at, ended_at, end_reason 'setback'\|'paused'\|'completed'\|null)`; `journey_setbacks(id, attempt_id, user_id, occurred_at, note, outcome 'continued'\|'restarted')` | "A setback is recorded, not reset." **Continue** keeps the attempt running and logs a setback. **Restart** ends the attempt and opens attempt N+1. Previous attempts are always kept. |
+| 4. Journeys (Phase 6) | `journeys(id, user_id, name, what_text, why_text, why_written_at, length_days, checkpoint_days smallint[], color, created_at)`; `journey_rules(id, journey_id, user_id, kind 'remove'\|'allow', label, suggested bool, position)`; `journey_attempts(id, journey_id, user_id, number, started_at, ended_at, end_reason 'setback'\|'paused'\|'completed'\|null)`. Phase 7 adds `journey_setbacks(id, attempt_id, user_id, occurred_at, note, outcome 'continued'\|'restarted')`. No stored status: an attempt is active until ended or its length has passed. | "A setback is recorded, not reset." **Continue** keeps the attempt running and logs a setback. **Restart** ends the attempt and opens attempt N+1. Previous attempts are always kept. |
 | Later | `ai_insights` cache, if AI summaries are added | Only when the AI phase starts. |
 
 **Not stored:** derived values (daily averages, current day, floor progress, stats). They are computed from entries, initially in TS. If volume demands it later, we add SQL views or RPCs (for example `daily_mood(user, from, to)`).
@@ -506,12 +506,36 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 - **Still fixtures:** journeys and their events (until phase 6). Days that only have a journey event don't appear yet; phase 6 adds them to `journal_feed`.
 - **Deferred (not designed):** editing or deleting a longer entry.
 
-### Phase 6: Journeys (list and creation)
-- [ ] Migration 4.
-- [ ] List view: climbing now (`CheckpointTrack` log-scale, mood vs before, why quote), attempts bars, behind you, key `N`.
-- [ ] Wizard steps 1–4 with `Stepper`: What, Why, Rules (REMOVE / ALLOWED columns with flip, delete, add, and a "suggested" flag), Floors (name, 30/60/90 length, toggleable checkpoints, expectation copy, disclaimer). Then "Begun".
-- [ ] **Rule suggestions:** port the design's rule-based `parse()` as a local placeholder behind an interface (`suggestRules(text)`), so AI can replace it later without UI changes.
-- [ ] Sidebar "Active journeys" uses real data.
+### Phase 6: Journeys (list and creation) ✅
+- [x] **Migration 4** (`20261008120000_journeys.sql`, plus `…120100_create_journey_rules_fix.sql`; both applied):
+  - Tables: `journeys` (name, what, why, why written at, length 30/60/90, kept floors, color key), `journey_rules` (remove/allow, label, suggested, position) and `journey_attempts` (number, started, ended, end reason).
+  - Child rows reference `(journey_id, user_id)`, so a rule or attempt can't be attached to someone else's journey. At most one open attempt per journey.
+  - **Status isn't stored.** An attempt is active until it's ended or has run its length, so no background job is needed.
+  - `create_journey(…)` inserts the journey, its rules and attempt #1 in one transaction. `journey_attempt_moods()` gives the average mood during each attempt and over the 30 days before it.
+  - A rolled-back two-user test covered owner-only access, the composite keys, one open attempt, invalid checkpoints/colour/blank why/blank rule (whole journey rolled back), restart after a setback, and anonymous calls refused.
+  - Setbacks get their table in phase 7 with their flow.
+- [x] **Rules of the game** (`utils/journey.ts`, tested):
+  - Day N opens (N − 1) × 24 h after the start, to the hour, as in the design.
+  - Attempt status and spans for Timeline/Journal, the log-scaled checkpoint track, the next-floor countdown, and mood change with ≥ 3 check-ins each side.
+  - Attempt bars are scaled to the longest run or the next floor. The summary sentence is templated ("Attempt #2 is already three times as long").
+  - "Behind you" rows; journey colours (first unused of amber/blue/sand/slate).
+- [x] **List** (`pages/journeys/index.vue`):
+  - `JourneyListItem` with `CheckpointTrack` (mood vs before, Day N, next floor, why quote), `AttemptBars` for journeys on a second attempt, and `PastJourneys`. Key `N`.
+  - Empty "Climbing now" gets a quiet line.
+- [x] **Wizard** (`pages/journeys/new.vue` and `useJourneyWizard`):
+  - `Breadcrumb` and `Stepper`, then the four steps: `WizardStep`, `RuleColumn` (flip, delete, add with duplicate check, "suggested"), and `FloorPlan` (name, `SegmentedControl` `mono-lg` for length, `CheckSquare` per floor; day 1 and the summit are locked).
+  - Then `JourneyBegun` with `.journey-orb`.
+  - Rules are re-read only if step 1's text changed, so edits survive going back.
+  - Esc leaves a field first, then the wizard. A failed save keeps everything and says so.
+- [x] **Rule suggestions:** the design's `parse()` is ported as `parseRules`, behind `suggestRules(text): Promise<…>` for the AI to replace later. The expectation copy lives in `utils/journeyWizard.ts`.
+- [x] **Real journeys everywhere:**
+  - `useJourneys` loads them once in the default layout.
+  - The sidebar (`useActiveJourneys`), Timeline lanes and markers, Journal events, chips and the composer label, and the `/journeys/[id]` stub use them. `fixtures/journeys.ts` and `fixtures/shell.ts` are deleted.
+  - Today shows the cravings lane while a running journey removes nicotine.
+- **Verified** against the running design (sample journeys, "now" 5 Oct 2026 20:43) at 1280px, plus the list at 375px.
+  - List rows, track geometry and fill widths, floor labels, attempt bars, past rows, every wizard step (stepper dots, textareas, rule rows and add fields, name field, length control, floor rows and checkboxes, buttons) and the begun view match to within 0.5px.
+  - Fixed on the way: section titles use the body line-height (`SectionHeader`), and the "Log how you feel" link is 38px like the design's link.
+  - Interactions tested signed out: focus per step, rule edits, floor toggles, length change, Esc, and the failed save. Creating a journey for real needs a signed-in session; the database function itself was tested directly.
 
 ### Phase 7: Journey detail (the climb)
 - [ ] `/journeys/[id]`: breadcrumb, serif "Day N" and title, attempt line.
@@ -575,6 +599,9 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 | 17 | Browsers abbreviate September as "Sept" in en-GB; the design shows "Sep". | Fixed month abbreviations everywhere. |
 | 18 | Timeline's week chart draws each day's average at the column centre, which only reads well with several check-ins a day; with one evening check-in the line floats away from its dot. | Each day's average sits at the mean time of that day's check-ins (on the dot for a single check-in, near the centre on busy days). |
 | 19 | Journal lists "Reached Day 3/7" floors only for Nicotine-free; other journeys' floors are left out. | Every journey's floors are listed (after day 1, before its last day, where the ending says it). |
+| 20 | "Behind you" is in no clear order (Read, No social media, Gym, Dopamine detox, then the most recent setback). | Most recently ended first. |
+| 21 | Step 4 names the last floor "Summit" at 30 and 90 days but "Day 60" at 60 days (with roman "SUMMIT"). | The last floor is always "Summit". |
+| 22 | The journey list's meta line shows rule counts for one journey and its rule text for the other. | Always "N removed, M allowed" (rules are listed on the journey page). The why quote is clamped to two lines. |
 
 ---
 

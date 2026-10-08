@@ -1,6 +1,47 @@
 import type { DayKey } from '~/utils/date'
+import type { JourneyColor } from '~/utils/journey'
 
-/** Minimal journey shape the shell needs. Extended in phase 6. */
+export type RuleKind = 'remove' | 'allow'
+
+/** One approved rule ("Nicotine" removed, "Coffee" allowed). */
+export interface JourneyRule {
+  kind: RuleKind
+  label: string
+  /** Offered by the app rather than read from the user's text. */
+  suggested: boolean
+}
+
+export type AttemptEndReason = 'setback' | 'paused' | 'completed'
+
+export interface JourneyAttempt {
+  id: string
+  number: number
+  /** ISO timestamp; Day N opens (N − 1) × 24 h after it. */
+  startedAt: string
+  endedAt: string | null
+  endReason: AttemptEndReason | null
+}
+
+/** A journey with its rules and attempts. Matches the `journeys` row and its children. */
+export interface Journey {
+  id: string
+  name: string
+  /** Step 1, in the user's words. */
+  what: string
+  /** Step 2, in the user's words. */
+  why: string
+  whyWrittenAt: string
+  lengthDays: number
+  /** Floors kept in the wizard, ascending; always includes 1 and the length. */
+  checkpoints: number[]
+  color: JourneyColor
+  createdAt: string
+  rules: JourneyRule[]
+  /** Oldest first; the last one is the current attempt. */
+  attempts: JourneyAttempt[]
+}
+
+/** Minimal journey shape the shell needs (sidebar, composer label). */
 export interface JourneySummary {
   id: string
   name: string
@@ -12,7 +53,7 @@ export interface JourneySummary {
 
 export type JourneyStatus = 'active' | 'completed' | 'stopped' | 'setback'
 
-/** One attempt of a journey as a date span (Timeline lanes and markers). */
+/** One attempt of a journey as a date span (Timeline lanes and markers, Journal events). */
 export interface JourneySpan {
   id: string
   name: string

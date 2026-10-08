@@ -1,0 +1,89 @@
+@use '../abstracts' as *;
+
+$sage-fill: rgba(150, 170, 116, 0.25);
+
+// ── Sage orb (begun view; later the journey detail) ───────────────────
+.journey-orb {
+  display: block;
+  flex-shrink: 0;
+  width: var(--orb-size, 96px);
+  height: var(--orb-size, 96px);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, $color-sage-light, $color-sage 70%);
+  box-shadow: 0 0 80px -6px rgba(150, 170, 116, 0.6);
+}
+
+// ── Checkpoint track: floors on a log scale ───────────────────────────
+.checkpoint-track {
+  position: relative;
+  display: block;
+  height: 44px;
+  margin: 0 6px;
+}
+
+.checkpoint-track__rail,
+.checkpoint-track__fill {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.checkpoint-track__rail {
+  right: 0;
+  background: rgba(150, 170, 116, 0.1);
+}
+
+.checkpoint-track__fill {
+  background: linear-gradient(to right, $sage-fill, $color-sage);
+  box-shadow: 0 0 14px rgba(150, 170, 116, 0.35);
+}
+
+.checkpoint-track__floor {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+
+.checkpoint-track__dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 9px;
+  border: 1px solid $line-emphasis;
+  border-radius: 50%;
+  background: $color-surface-raised;
+
+  .is-reached & {
+    border-width: 0;
+    background: $color-sage;
+  }
+
+  .is-next & {
+    width: 16px;
+    height: 16px;
+    margin-top: 6px;
+    border-color: $color-sage;
+    background: $sage-fill;
+    box-shadow: 0 0 14px rgba(150, 170, 116, 0.6);
+  }
+}
+
+.checkpoint-track__label {
+  font-family: $font-mono;
+  font-size: 10.5px;
+  white-space: nowrap;
+  color: $color-text-ghost;
+
+  .is-reached & {
+    color: $color-text-muted;
+  }
+
+  .is-next & {
+    color: $color-sage-text;
+  }
+}

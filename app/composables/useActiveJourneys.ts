@@ -1,6 +1,8 @@
-import { activeJourneysFixture } from '~/fixtures/shell'
+import { climbingJourneys, journeySummary } from '~/utils/journey'
 
-/** Journeys currently being climbed (sidebar list). Backed by a fixture until phase 6. */
+/** Journeys currently being climbed, longest-running first (sidebar list, composer label). */
 export function useActiveJourneys() {
-  return useState('active-journeys', () => activeJourneysFixture)
+  const { journeys } = useJourneys()
+  const now = useNow()
+  return computed(() => climbingJourneys(journeys.value, now.value).map(j => journeySummary(j, now.value)))
 }

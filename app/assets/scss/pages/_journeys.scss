@@ -1,0 +1,681 @@
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// ── List ──────────────────────────────────────────────────────────────
+.journeys {
+  gap: 56px;
+}
+
+.journeys__climbing,
+.past-journeys {
+  display: flex;
+  flex-direction: column;
+}
+
+.journeys__label,
+.past-journeys__label {
+  padding-bottom: 12px;
+}
+
+.journeys__empty {
+  margin: 0;
+  padding: 24px 0;
+  border-top: 1px solid $line;
+  font-size: 14px;
+  color: $color-text-faint;
+}
+
+.journey-row {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px 0;
+  border-top: 1px solid $line;
+  color: $color-text;
+  transition: background-color $duration-base;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.015);
+    color: $color-text;
+  }
+}
+
+.journey-row__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.journey-row__title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.journey-row__name {
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.journey-row__meta {
+  font-size: 12.5px;
+  color: $color-text-neutral;
+}
+
+.journey-row__figures {
+  display: flex;
+  align-items: baseline;
+  gap: 28px;
+}
+
+.journey-row__mood {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.journey-row__mood-label {
+  font-size: 12px;
+  color: $color-text-neutral;
+}
+
+.journey-row__mood-value,
+.past-journeys__change {
+  font-family: $font-mono;
+  color: $color-text-subtle;
+
+  &.is-positive {
+    color: $color-positive;
+  }
+
+  &.is-negative {
+    color: $color-negative;
+  }
+}
+
+.journey-row__mood-value {
+  font-size: 14px;
+}
+
+.journey-row__day {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.journey-row__day-label {
+  font-family: $font-mono;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $color-text-subtle;
+}
+
+.journey-row__day-value {
+  font-size: 44px;
+  font-weight: 300;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+.journey-row__foot {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.journey-row__next {
+  color: $color-text-secondary;
+}
+
+.journey-row__why {
+  display: -webkit-box;
+  max-width: 52ch;
+  overflow: hidden;
+  font-family: $font-quote;
+  font-style: italic;
+  font-size: 15px;
+  color: $color-text-subtle;
+  text-align: right;
+  text-wrap: pretty;
+  // A long "why" stays a short quote here; the journey page shows it whole.
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+// Attempts of a journey being climbed again.
+.attempts {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.attempts__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.attempts__row {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.attempts__number {
+  font-size: 13px;
+  color: $color-text-subtle;
+
+  .is-active & {
+    color: $color-text;
+  }
+}
+
+.attempts__track {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.attempts__bar {
+  min-width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: $line-hover;
+
+  .is-active & {
+    background: linear-gradient(to right, rgba(150, 170, 116, 0.3), $color-sage);
+  }
+}
+
+.attempts__label {
+  font-size: 12.5px;
+  white-space: nowrap;
+  color: $color-text-subtle;
+}
+
+.attempts__summary {
+  max-width: 64ch;
+  margin: 0;
+  font-size: 13px;
+  color: $color-text-faint;
+  text-wrap: pretty;
+}
+
+// Behind you.
+.past-journeys__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 90px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid $line-soft;
+}
+
+.past-journeys__title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.past-journeys__name {
+  font-size: 15px;
+}
+
+.past-journeys__dates {
+  font-size: 12px;
+  color: $color-text-dim;
+}
+
+.past-journeys__status {
+  font-size: 12.5px;
+  color: $color-text-neutral;
+
+  &.is-completed {
+    color: $color-text-secondary;
+  }
+}
+
+.past-journeys__change {
+  font-size: 12.5px;
+  text-align: right;
+}
+
+.past-journeys__note {
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid $line-soft;
+  font-size: 12px;
+  color: $color-text-ghost;
+}
+
+// ── Wizard ────────────────────────────────────────────────────────────
+.wizard {
+  gap: 40px;
+
+  ::placeholder {
+    color: $color-text-ghost;
+  }
+}
+
+.wizard__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.wizard-step {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.wizard-step--loose {
+  gap: 22px;
+}
+
+.wizard-step__count {
+  @include mono-label(11px, $color-text-label);
+}
+
+.wizard-step__title {
+  margin: 0;
+  font-family: $font-serif;
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 1.1;
+}
+
+.wizard-step__description {
+  max-width: 56ch;
+  margin: 0;
+  font-size: 15px;
+  color: $color-text-subtle;
+  text-wrap: pretty;
+}
+
+.wizard-step__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.wizard-textarea {
+  width: 100%;
+  padding: 20px 22px;
+  resize: vertical;
+  background: $color-surface;
+  border: 1px solid $line-strong;
+  border-radius: $radius-lg;
+  outline: none;
+  font-family: $font-quote;
+  font-size: 21px;
+  line-height: 1.55;
+  color: $color-text;
+
+  &:focus {
+    border-color: $line-hover;
+  }
+}
+
+.wizard-textarea--why {
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.wizard__links {
+  display: flex;
+  gap: 16px;
+}
+
+.wizard__link {
+  @include button-reset;
+  @include focus-ring;
+
+  font-size: 13px;
+  color: $color-text-subtle;
+
+  &:hover {
+    color: $color-text;
+  }
+
+  &.is-underlined {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.wizard__quote {
+  margin: 0;
+  padding: 16px 20px;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: $font-quote;
+  font-size: 17px;
+  line-height: 1.5;
+  color: $color-text-muted;
+  white-space: pre-wrap;
+  text-wrap: pretty;
+}
+
+.wizard__reading {
+  margin: 0;
+  font-size: 14px;
+  color: $color-text-subtle;
+}
+
+.wizard__rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+}
+
+.wizard__note {
+  margin: 0;
+  font-size: 12.5px;
+  color: $color-text-dim;
+}
+
+.wizard__note--wide {
+  max-width: 64ch;
+  text-wrap: pretty;
+}
+
+// Save failure (not in the design; uses the form-error tone).
+.wizard__error {
+  margin: 0;
+  font-size: 13px;
+  color: $color-error-form;
+}
+
+// Step 3: remove / allowed columns.
+.rule-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rule-column__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid $line-strong;
+}
+
+.rule-column__title {
+  @include mono-label(11px, $color-negative);
+
+  margin: 0;
+  font-weight: 400;
+
+  .rule-column--allow & {
+    color: $color-sage-label;
+  }
+}
+
+.rule-column__count {
+  font-size: 11.5px;
+  color: $color-text-ghost;
+}
+
+.rule-column__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.rule-column__rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 37px; // the design's 36px row plus its hairline
+  padding: 0 4px;
+  border-bottom: 1px solid $line-faint;
+}
+
+.rule-column__dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: map.get($moods, 2);
+
+  .rule-column--allow & {
+    background: $color-sage;
+  }
+}
+
+.rule-column__label {
+  flex: 1;
+  min-width: 0;
+  font-size: 14.5px;
+}
+
+.rule-column__suggested {
+  font-size: 11px;
+  color: $color-text-dim;
+}
+
+// Text buttons keep the browser's default 1px 6px padding, as in the design.
+.rule-column__action {
+  @include button-reset;
+  @include focus-ring;
+
+  padding: 1px 6px;
+  font-size: 12px;
+  color: $color-text-dim;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
+.rule-column__action--delete {
+  font-size: 13px;
+}
+
+.rule-column__add {
+  height: 35px; // 34px plus the dashed underline
+  padding: 0 4px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed $line-control;
+  outline: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: $color-text;
+
+  &:focus {
+    border-bottom-color: $line-hover;
+  }
+}
+
+// Step 4: name, length and floors.
+.wizard__settings {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.wizard__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &:first-child {
+    flex: 1 1 240px;
+  }
+}
+
+.wizard__field-label {
+  font-size: 12px;
+  color: $color-text-faint;
+}
+
+.wizard__name {
+  height: 42px; // the design's 40px content box plus its border
+  padding: 0 12px;
+  background: $color-surface;
+  border: 1px solid $line-strong;
+  border-radius: $radius-sm;
+  outline: none;
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: $color-text;
+
+  &:focus {
+    border-color: $line-hover;
+  }
+}
+
+.floor-plan {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.floor-plan__floor {
+  display: grid;
+  grid-template-columns: 44px 78px minmax(0, 1fr) 28px;
+  align-items: start;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid $line-soft;
+  transition: opacity $duration-base;
+
+  &.is-off {
+    opacity: 0.45;
+  }
+}
+
+.floor-plan__dot {
+  width: 10px;
+  height: 10px;
+  margin: 5px 0 0 2px;
+  border-radius: 50%;
+  background: rgba(150, 170, 116, 0.6);
+
+  .is-major & {
+    width: 14px;
+    height: 14px;
+    margin: 3px 0 0;
+  }
+
+  .is-summit & {
+    background: $color-sage;
+  }
+
+  .is-off & {
+    background: $line-control;
+  }
+}
+
+.floor-plan__name {
+  display: flex;
+  flex-direction: column;
+}
+
+.floor-plan__title {
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.floor-plan__roman {
+  font-size: 11px;
+  color: $color-text-dim;
+}
+
+.floor-plan__expectation {
+  font-size: 14px;
+  color: $color-text-muted;
+  text-wrap: pretty;
+}
+
+// ── Begun ─────────────────────────────────────────────────────────────
+.journey-begun {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 620px;
+  margin: 10vh auto 0;
+  text-align: center;
+}
+
+.journey-begun__orb {
+  margin-bottom: 12px;
+}
+
+.journey-begun__eyebrow {
+  font-family: $font-mono;
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $color-sage-label;
+}
+
+.journey-begun__title {
+  margin: 0;
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.1;
+}
+
+.journey-begun__meta {
+  margin: 0;
+  font-size: 14px;
+  color: $color-text-subtle;
+}
+
+.journey-begun__why {
+  margin: 12px 0 0;
+  font-family: $font-quote;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.45;
+  color: $color-text-quote;
+  text-wrap: pretty;
+}
+
+.journey-begun__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.btn.journey-begun__log {
+  height: 38px; // a link in the design: 36px plus its border
+  color: $color-text-secondary;
+
+  &:hover:not(:disabled) {
+    color: $color-text;
+  }
+}
