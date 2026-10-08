@@ -10,7 +10,7 @@ const TZ = 'UTC'
 const CPS = [1, 3, 7, 14, 30, 60, 90]
 
 const attempt = (id: string, number: number, startedAt: string, endedAt: string | null = null, endReason: JourneyAttempt['endReason'] = null): JourneyAttempt =>
-  ({ id, number, startedAt, endedAt, endReason })
+  ({ id, number, startedAt, endedAt, endReason, setbacks: [] })
 
 const journey = (id: string, name: string, lengthDays: number, attempts: JourneyAttempt[], extra: Partial<Journey> = {}): Journey => ({
   id, name, what: '', why: 'Because.', whyWrittenAt: attempts[0]!.startedAt, lengthDays,

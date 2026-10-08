@@ -63,6 +63,15 @@ $color-sage-label: rgb(160, 182, 124);
 $color-sage-text: rgb(170, 190, 140);
 $color-sage-chip: #B6C59C;
 
+// Journey page palette: its own greys and dividers, kept as designed (PLAN.md §8 #2).
+$journey-title: #F2F0EB;
+$journey-title-muted: #7E7E7E;
+$journey-text: #8E8C88;
+$journey-line: rgba(59, 59, 59, 0.6);
+$journey-line-soft: rgba(59, 59, 59, 0.5);
+$journey-line-faint: rgba(59, 59, 59, 0.4);
+$journey-sage: rgb(150, 173, 114);
+
 $color-positive: oklch(0.8 0.085 78);
 $color-negative: oklch(0.7 0.05 232);
 

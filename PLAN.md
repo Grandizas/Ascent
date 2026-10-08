@@ -537,13 +537,29 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - Fixed on the way: section titles use the body line-height (`SectionHeader`), and the "Log how you feel" link is 38px like the design's link.
   - Interactions tested signed out: focus per step, rule edits, floor toggles, length change, Esc, and the failed save. Creating a journey for real needs a signed-in session; the database function itself was tested directly.
 
-### Phase 7: Journey detail (the climb)
-- [ ] `/journeys/[id]`: breadcrumb, serif "Day N" and title, attempt line.
-- [ ] `JourneyClimb`: vertical steps column with the progress tube, "You are here", the previous days' ticks, and faded future floors. Progress is computed from `started_at` and the checkpoints, to the hour, as in the design.
-- [ ] `JourneyNextFloor`: "Often reported" vs "Your entries", hedged copy only.
-- [ ] `JourneyMoodChart`: daily average vs the pre-journey baseline, phase averages.
-- [ ] `JourneyNotes`, `JourneyWhy`.
-- [ ] **Record a setback:** the flow is not designed (Q6). It will be extrapolated as a small panel or modal in the existing style: "What happened?", an optional note, then Continue or Restart. **Edit rules** reuses `RuleColumn`.
+### Phase 7: Journey detail (the climb) ✅
+- [x] **Migration 5** (`20261009120000_journey_setbacks.sql`, applied):
+  - `journey_setbacks(attempt, note, outcome continued|restarted)`, tied to the attempt's owner by `(attempt_id, user_id)`.
+  - `record_setback(journey, note, outcome)`: "continued" logs it; "restarted" also ends the attempt (reason setback) and opens attempt N+1, in one transaction.
+  - `replace_journey_rules(journey, rules)` swaps the rules atomically.
+  - A rolled-back two-user test covered both outcomes, other users' journeys (refused), invalid outcomes and blank rules (nothing changed), no running attempt, and anonymous calls refused.
+- [x] **Logic** (`utils/analytics/journeyDetail.ts`, tested with the design's own scenario):
+  - `attemptView`: the day to the hour, current/next floor, frozen at the end for ended attempts. The header line and the "Written …, before Day 1" label.
+  - `climb`: floors ahead (faded, blurred), the next floor with its countdown, the tube with the last days' ticks, the current floor and the floors behind. It uses each journey's own kept floors.
+  - `nextFloor` reuses the wizard's floor copy. `evidence` is cravings per day (this week vs week one), the lowest three-hour stretch, and nights tagged "Good sleep"; journeys without nicotine get mood vs before instead of cravings.
+  - `journeyChart` (daily averages by journey day, the 30-day baseline, floor guides, de-crowded marks), `phases` (Before plus the last three stretches between floors), `moodSummary` (lowest day, the stretch above baseline) and `journeyNotes` (one note per day, preferring notes about the journey).
+- [x] **Page** (`pages/journeys/[id].vue` and `JourneyDetailView`):
+  - Components: `JourneyClimb` (sticky on desktop), `JourneySection`, `JourneyNextFloor`, `JourneyMoodChart` (its own small SVG: 0–10 scale and a baseline label, unlike `MoodLineChart`), `JourneyNotes`, and the why quote.
+  - The page shows the current attempt; ended journeys (linked from "Behind you") drop the next-floor section and actions.
+  - The journey page's own greys and dividers are tokens (`$journey-*`, §8 #2).
+- [x] **Record a setback and Edit rules** (not designed, Q6) are inline panels in the composer/wizard style:
+  - `SetbackPanel`: optional "What happened?", then "Keep climbing" or "Start attempt #N".
+  - `RulesEditor` reuses `RuleColumn` through the new shared `useRuleList`; the wizard uses it too.
+  - Both report saves in the actions line and keep everything on failure. Esc leaves a field, then closes the panel.
+- **Verified** against the running design (Today.dc.html#journey, same "now") at 1440px and 375px.
+  - Matched to within 0.5px: header, floor column (281px with its border), every floor circle centre, step notes, tube and fill, ticks, "You are here", content column, section titles, evidence table, chart box, y labels, dot positions, marks, phases, note rows, why quote and actions.
+  - Section positions differ only by the next-floor paragraph's copy (§8 #24).
+  - The real page needs a signed-in session; the visual check used a temporary page fed with design-shaped data, removed afterwards.
 
 ### Phase 8: Insights
 - [ ] Range 30d / 90d / 1y / all.
@@ -602,6 +618,11 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 | 20 | "Behind you" is in no clear order (Read, No social media, Gym, Dopamine detox, then the most recent setback). | Most recently ended first. |
 | 21 | Step 4 names the last floor "Summit" at 30 and 90 days but "Day 60" at 60 days (with roman "SUMMIT"). | The last floor is always "Summit". |
 | 22 | The journey list's meta line shows rule counts for one journey and its rule text for the other. | Always "N removed, M allowed" (rules are listed on the journey page). The why quote is clamped to two lines. |
+| 23 | The journey page's breadcrumb reads "Today / Journeys / Nicotine-free" (the view lived inside Today). | "Journeys / Name", with Journeys linked. |
+| 24 | The journey page's next-floor copy differs from the wizard's for the same floor. | The page repeats the wizard's floor copy, since the wizard promises "at each floor you'll see them". |
+| 25 | The phase averages (5.8 / 4.6 / 5.2 / 6.1) and the summary sentence are fixed text that doesn't match the plotted days. | Computed from the entries; the summary is templated (lowest day, stretch above the baseline). |
+| 26 | On mobile the floor column stays sticky while the content wraps below it, so it would cover the sections as you scroll. | Sticky on desktop only. |
+| 27 | "Often reported vs Your entries" is designed for nicotine only (cravings, focus, sleep). | Other journeys show mood vs before, the lowest time of day and sleep, in the same hedged wording. |
 
 ---
 

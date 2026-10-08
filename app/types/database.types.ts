@@ -129,6 +129,44 @@ export type Database = {
           },
         ]
       }
+      journey_setbacks: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          id: string
+          note: string
+          occurred_at: string
+          outcome: string
+          user_id: string
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          id?: string
+          note?: string
+          occurred_at?: string
+          outcome: string
+          user_id?: string
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          occurred_at?: string
+          outcome?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'journey_setbacks_attempt_id_user_id_fkey'
+            columns: ['attempt_id', 'user_id']
+            isOneToOne: false
+            referencedRelation: 'journey_attempts'
+            referencedColumns: ['id', 'user_id']
+          },
+        ]
+      }
       journeys: {
         Row: {
           checkpoint_days: number[]
@@ -296,6 +334,14 @@ export type Database = {
           during_average: number
           during_entries: number
         }[]
+      }
+      record_setback: {
+        Args: { p_journey_id: string, p_note: string, p_outcome: string }
+        Returns: string
+      }
+      replace_journey_rules: {
+        Args: { p_journey_id: string, p_rules: Json }
+        Returns: undefined
       }
     }
     Enums: {
