@@ -63,7 +63,7 @@ describe('timelineStats', () => {
     ]
     const previous = [entry('2026-09-25', '10:00', 5)]
     const [avg, checkIns, stability, most] = timelineStats(entries, previous, week, TODAY, TZ)
-    expect(avg).toEqual({ key: 'Average', value: '6.5', sub: '↑ 1.5 vs previous', tone: 'positive' })
+    expect(avg).toEqual({ key: 'Average', value: '6.5', sub: '1.5 vs previous', tone: 'positive', trend: 'up' })
     expect(checkIns).toMatchObject({ value: '4', sub: '0.6 a day' })
     expect(stability).toMatchObject({ key: 'Stability', value: 'Variable', sub: '±1.6 day to day' })
     expect(most).toMatchObject({ value: 'Work', sub: '3×' })

@@ -14,8 +14,8 @@ const emit = defineEmits<{
 }>()
 
 const COPY = {
-  remove: { title: 'Remove', flip: '→', flipTo: 'allowed', placeholder: '+ Add something to remove' },
-  allow: { title: 'Allowed', flip: '←', flipTo: 'remove', placeholder: '+ Add something allowed' },
+  remove: { title: 'Remove', flip: 'arrow-right', flipTo: 'allowed', placeholder: '+ Add something to remove' },
+  allow: { title: 'Allowed', flip: 'arrow-left', flipTo: 'remove', placeholder: '+ Add something allowed' },
 } as const
 
 const copy = computed(() => COPY[props.kind])
@@ -63,7 +63,7 @@ function add() {
           :aria-label="`Move ${rule.label} to ${copy.flipTo}`"
           @click="emit('flip', index)"
         >
-          {{ copy.flip }}
+          <AppIcon :name="copy.flip" />
         </button>
         <button
           type="button"
@@ -72,7 +72,7 @@ function add() {
           :aria-label="`Remove ${rule.label}`"
           @click="emit('delete', index)"
         >
-          ×
+          <AppIcon name="close" />
         </button>
       </li>
     </ul>

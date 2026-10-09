@@ -24,7 +24,8 @@ defineProps<{
         to="/journal"
         class="text-link"
       >
-        Journal →
+        Journal
+        <AppIcon name="arrow-right" />
       </NuxtLink>
     </div>
     <MomentRow

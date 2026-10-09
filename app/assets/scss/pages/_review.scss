@@ -1,0 +1,646 @@
+@use '../abstracts' as *;
+
+// Year review: the design's own highlight tones for best / hardest months.
+$review-best: oklch(0.82 0.085 78);
+$review-hardest: oklch(0.72 0.05 232);
+
+.review {
+  gap: 88px;
+}
+
+.review__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review__section--arc {
+  gap: 18px;
+}
+
+.review__empty {
+  margin: 0;
+  font-size: 14px;
+  color: $color-text-faint;
+}
+
+// ── Hero ──────────────────────────────────────────────────────────────
+.review-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-top: 24px;
+
+  .segmented__item {
+    letter-spacing: 0.04em;
+  }
+}
+
+.review-hero__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.review-hero__eyebrow {
+  @include mono-label(11.5px);
+
+  letter-spacing: 0.1em;
+}
+
+.review-hero__title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-hero__year {
+  margin: 0;
+  font-family: $font-serif;
+  font-weight: 300;
+  font-size: clamp(96px, 16vw, 180px);
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+}
+
+.review-hero__subtitle {
+  font-family: $font-quote;
+  font-style: italic;
+  font-size: 24px;
+  color: $color-text-muted;
+}
+
+.review-hero__counts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  border-top: 1px solid $line-strong;
+}
+
+.review-hero__count {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 20px 16px 0 0;
+}
+
+.review-hero__count-value {
+  font-size: 40px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.review-hero__count-label {
+  font-size: 13px;
+  color: $color-text-faint;
+}
+
+// ── The year's arc ────────────────────────────────────────────────────
+.year-arc {
+  position: relative;
+  margin-top: 20px;
+  padding-left: 26px;
+}
+
+.year-arc__plot {
+  position: relative;
+  height: 240px;
+}
+
+.year-arc__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+
+  line,
+  path {
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.year-arc__grid {
+  stroke: $line-subtle;
+}
+
+.year-arc__month-line {
+  stroke: $fill-hover;
+}
+
+.year-arc__best {
+  fill: oklch(0.8 0.085 78 / 0.05);
+}
+
+.year-arc__hardest {
+  fill: oklch(0.64 0.06 232 / 0.06);
+}
+
+.year-arc__area-stop {
+  stop-color: oklch(0.8 0.08 75);
+  stop-opacity: 0;
+}
+
+.year-arc__area-stop--top {
+  stop-opacity: 0.12;
+}
+
+.year-arc__average {
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-dasharray: 2 5;
+}
+
+.year-arc__line {
+  fill: none;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+}
+
+.year-arc__y {
+  position: absolute;
+  left: -26px;
+  font-family: $font-mono;
+  font-size: 10.5px;
+  color: $color-text-axis;
+  transform: translateY(-50%);
+}
+
+// One hover zone per week.
+.year-arc__zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+  cursor: crosshair;
+}
+
+.year-arc__callout {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  transform: translateX(-50%);
+
+  &.is-top {
+    top: 4px;
+  }
+
+  &.is-bottom {
+    top: calc(100% - 34px);
+  }
+
+  &.is-start {
+    align-items: flex-start;
+    transform: translateX(6px);
+  }
+
+  &.is-end {
+    align-items: flex-end;
+    transform: translateX(calc(-100% - 6px));
+  }
+}
+
+.year-arc__callout-word {
+  font-size: 12px;
+  white-space: nowrap;
+
+  .is-best & {
+    color: $review-best;
+  }
+
+  .is-hardest & {
+    color: $review-hardest;
+  }
+}
+
+.year-arc__callout-value {
+  font-family: $font-mono;
+  font-size: 11px;
+  color: $color-text-faint;
+}
+
+.year-arc__hover {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+
+.year-arc__hover-dot {
+  position: absolute;
+  left: 0;
+  box-sizing: content-box; // 9px plus the 2px halo, as designed
+  width: 9px;
+  height: 9px;
+  border: 2px solid $color-bg;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.year-arc__tooltip {
+  position: absolute;
+  z-index: $z-tooltip;
+  top: -4px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-sizing: content-box;
+  width: 240px;
+  padding: 10px 12px;
+  background: $color-tooltip;
+  border: 1px solid $line-control;
+  border-radius: $radius-md;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+
+  &.is-flipped {
+    left: -10px;
+    transform: translateX(-100%);
+  }
+}
+
+.year-arc__tooltip-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.year-arc__tooltip-value {
+  font-family: $font-mono;
+  font-size: 12px;
+  color: $color-text-subtle;
+}
+
+.year-arc__tooltip-body {
+  font-size: 12.5px;
+  color: $color-text-secondary;
+  text-wrap: pretty;
+}
+
+.year-arc__months {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  margin-top: 10px;
+}
+
+.year-arc__month {
+  font-family: $font-mono;
+  font-size: 10.5px;
+  color: $color-text-ghost;
+  text-align: center;
+
+  &.is-best {
+    color: $review-best;
+  }
+
+  &.is-hardest {
+    color: $review-hardest;
+  }
+}
+
+.year-arc__lanes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid $line-soft;
+}
+
+.year-arc__lane {
+  position: relative;
+  height: 18px;
+}
+
+.year-arc__lane-bar {
+  position: absolute;
+  top: 50%;
+  min-width: 4px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-50%);
+
+  &.is-active {
+    background: $color-sage;
+  }
+
+  &.is-completed {
+    background: rgba(236, 234, 229, 0.4);
+  }
+}
+
+.year-arc__lane-name {
+  position: absolute;
+  top: 50%;
+  padding: 0 8px;
+  font-size: 11.5px;
+  white-space: nowrap;
+  color: $color-text-subtle;
+  transform: translateY(-50%);
+
+  &.is-before {
+    transform: translate(-100%, -50%);
+  }
+}
+
+// ── Superlatives ──────────────────────────────────────────────────────
+.review-supers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  border-top: 1px solid $line-strong;
+}
+
+.review-supers__item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 28px 24px 28px 0;
+  border-bottom: 1px solid $line-soft;
+}
+
+.review-supers__key {
+  @include mono-label(10.5px, $color-text-label);
+}
+
+.review-supers__value {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.review-supers__dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.review-supers__arrow {
+  font-size: 20px;
+  color: $color-text-subtle;
+}
+
+.review-supers__sub {
+  font-size: 13.5px;
+  color: $color-text-subtle;
+  text-wrap: pretty;
+}
+
+// ── Month by month ────────────────────────────────────────────────────
+.review-months {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1px;
+  margin-top: 8px;
+  background: $line-soft;
+  border: 1px solid $line-soft;
+}
+
+.review-months__month {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 16px 14px;
+  background: $color-bg;
+
+  &.is-empty {
+    opacity: 0.35;
+  }
+}
+
+.review-months__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.review-months__name {
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.review-months__average {
+  font-family: $font-mono;
+  font-size: 13px;
+  color: $color-text-secondary;
+}
+
+.review-months__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 26px;
+}
+
+.review-months__bar {
+  flex: 1;
+}
+
+.review-months__label {
+  min-height: 16px;
+  font-size: 11.5px;
+  color: $color-text-dimmer;
+
+  &.is-best { color: $review-best; }
+  &.is-hardest { color: $review-hardest; }
+  &.is-stable { color: $color-text-secondary; }
+}
+
+// ── Moments worth keeping ─────────────────────────────────────────────
+.review-moments {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-moments__label {
+  margin-bottom: 6px;
+}
+
+.review-moments__title {
+  margin: 0 0 18px;
+}
+
+.review-moments__moment {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 24px;
+  padding: 22px 0;
+  border-top: 1px solid $line;
+}
+
+.review-moments__when,
+.review-moments__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.review-moments__when {
+  gap: 4px;
+}
+
+.review-moments__body {
+  gap: 6px;
+}
+
+.review-moments__date {
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.review-moments__score {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: $color-text-subtle;
+}
+
+.review-moments__note {
+  font-family: $font-quote;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.4;
+  color: $color-text-quote;
+  text-wrap: pretty;
+}
+
+.review-moments__context {
+  font-size: 12px;
+  color: $color-text-dimmer;
+}
+
+// ── Tags and journeys ─────────────────────────────────────────────────
+.review-lists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 48px;
+}
+
+.review-lists__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.review-lists__label {
+  padding-bottom: 12px;
+  border-bottom: 1px solid $line-strong;
+}
+
+.review-lists__note {
+  padding-top: 10px;
+  font-size: 11.5px;
+  color: $color-text-ghost;
+}
+
+.review-tags__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 56px 48px;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid $line-faint;
+}
+
+.review-tags__name {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 14px;
+}
+
+.review-tags__bar {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(236, 234, 229, 0.25);
+}
+
+.review-tags__count,
+.review-tags__difference {
+  font-family: $font-mono;
+  font-size: 12px;
+  color: $color-text-subtle;
+  text-align: right;
+}
+
+.review-tags__difference {
+  &.is-positive { color: $color-positive; }
+  &.is-negative { color: $color-negative; }
+}
+
+.review-journeys__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid $line-faint;
+}
+
+.review-journeys__title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.review-journeys__name {
+  font-size: 14px;
+}
+
+.review-journeys__dates {
+  font-size: 12px;
+  color: $color-text-dim;
+}
+
+.review-journeys__status {
+  font-size: 12.5px;
+  color: $color-text-neutral;
+  text-align: right;
+
+  &.is-active { color: $color-sage-text; }
+  &.is-completed { color: $color-text-secondary; }
+}
+
+.review-journeys__empty {
+  padding: 12px 0;
+  font-size: 13px;
+  color: $color-text-dim;
+}
+
+// ── Reflection ────────────────────────────────────────────────────────
+.review-reflection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 44px;
+  border-top: 1px solid $line-strong;
+}
+
+.review-reflection__paragraph {
+  max-width: 36em;
+  margin: 0;
+  font-family: $font-quote;
+  font-weight: 300;
+  font-size: 25px;
+  line-height: 1.55;
+  color: $color-text-quote;
+  text-wrap: pretty;
+}
+
+.review-reflection__note {
+  max-width: 64ch;
+  font-size: 12.5px;
+  color: $color-text-ghost;
+}

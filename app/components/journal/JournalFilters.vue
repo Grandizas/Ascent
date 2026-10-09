@@ -36,9 +36,9 @@ defineExpose({ focusSearch: () => input.value?.focus() })
   <div class="journal-filters">
     <div class="journal-filters__bar">
       <div class="journal-search">
-        <span
+        <AppIcon
           class="journal-search__glyph"
-          aria-hidden="true"
+          name="search"
         />
         <input
           id="search"

@@ -153,7 +153,8 @@ useHotkeys({
             class="wizard__link"
             @click="back"
           >
-            ← Back
+            <AppIcon name="arrow-left" />
+            Back
           </button>
           <button
             type="button"
@@ -217,7 +218,8 @@ useHotkeys({
           class="wizard__link"
           @click="back"
         >
-          ← Back
+          <AppIcon name="arrow-left" />
+          Back
         </button>
         <BaseButton
           variant="primary"
@@ -275,7 +277,8 @@ useHotkeys({
           class="wizard__link"
           @click="back"
         >
-          ← Back
+          <AppIcon name="arrow-left" />
+          Back
         </button>
         <BaseButton
           variant="sage"

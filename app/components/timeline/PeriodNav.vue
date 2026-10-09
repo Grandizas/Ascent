@@ -21,7 +21,7 @@ const emit = defineEmits<{ older: [], newer: [] }>()
         aria-keyshortcuts="ArrowLeft"
         @click="emit('older')"
       >
-        ←
+        <AppIcon name="arrow-left" />
       </BaseButton>
       <BaseButton
         variant="icon"
@@ -31,7 +31,7 @@ const emit = defineEmits<{ older: [], newer: [] }>()
         aria-keyshortcuts="ArrowRight"
         @click="emit('newer')"
       >
-        →
+        <AppIcon name="arrow-right" />
       </BaseButton>
     </div>
     <SegmentedControl

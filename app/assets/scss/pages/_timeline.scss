@@ -58,6 +58,11 @@
   font-size: 12px;
   color: $color-text-dim;
 
+  .app-icon {
+    margin-right: 4px;
+    font-size: 11px;
+  }
+
   &.is-positive {
     color: oklch(0.77 0.085 78);
   }

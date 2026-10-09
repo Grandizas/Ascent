@@ -61,7 +61,8 @@ async function oauth(provider: OAuthProvider) {
       to="/login"
       class="auth-back"
     >
-      ← Back to log in
+      <AppIcon name="arrow-left" />
+      Back to log in
     </NuxtLink>
   </div>
 

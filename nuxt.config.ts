@@ -59,7 +59,14 @@ export default defineNuxtConfig({
       { name: 'Geist', provider: 'google', weights: [300, 400, 500, 600] },
       { name: 'Geist Mono', provider: 'google', weights: [400, 500] },
       { name: 'Inria Serif', provider: 'google', weights: [300, 400, 700] },
-      { name: 'Newsreader', provider: 'google', weights: [300, 400], styles: ['normal', 'italic'] },
+      {
+        name: 'Newsreader',
+        provider: 'google',
+        weights: [300, 400],
+        styles: ['normal', 'italic'],
+        // Optical sizing, as the design loads it: large quotes use the tighter display cut.
+        providerOptions: { google: { experimental: { variableAxis: { opsz: [['6', '72']] } } } },
+      },
     ],
   },
 
