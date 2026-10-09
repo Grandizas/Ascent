@@ -68,7 +68,8 @@ const stats = computed(() => [
           to="/timeline"
           class="text-link"
         >
-          Open timeline →
+          Open timeline
+          <AppIcon name="arrow-right" />
         </NuxtLink>
       </div>
     </div>

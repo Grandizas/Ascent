@@ -23,7 +23,17 @@ defineProps<{ cells: readonly StatCell[] }>()
         <span
           class="timeline-stats__sub"
           :class="cell.tone && `is-${cell.tone}`"
-        >{{ cell.sub }}</span>
+        >
+          <AppIcon
+            v-if="cell.trend"
+            :name="cell.trend === 'up' ? 'arrow-up' : 'arrow-down'"
+          />
+          <span
+            v-if="cell.trend"
+            class="visually-hidden"
+          >{{ cell.trend === 'up' ? 'Up' : 'Down' }}</span>
+          {{ cell.sub }}
+        </span>
       </span>
     </div>
   </section>

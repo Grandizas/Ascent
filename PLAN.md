@@ -221,15 +221,14 @@ supabase/
 - **Pro later:**
   - An `.npmrc` entry `@fortawesome:registry=https://npm.fontawesome.com/` with `//npm.fontawesome.com/:_authToken=${FONT_AWESOME_TOKEN}`, where the token is an env var. Locally it lives in user-level config; on Vercel it is a project env var.
   - We add this `.npmrc` only when Pro is enabled. **No token is ever committed.**
-- **Design fidelity rule:** the design deliberately draws some glyphs in CSS. Those are brand and data-visualization marks, not interface icons, so they stay CSS:
-  - the brand mark
-  - mood dots
-  - diamonds
-  - the 5 bottom-nav glyphs
-  - the Journal search circle
-  - the "→ / ← / × / ✓" text glyphs
+- **Icons (Q3, decided):** interface icons are Font Awesome, including where the design drew them in CSS or text:
+  - the 5 bottom-nav icons (sun, chart line, mountain, bar chart, open book)
+  - the Journal search glyph
+  - the "← / → / × / ✓" glyphs (Back links, period arrows, rule flip/delete, floor checkboxes)
+  - Timeline's ↑/↓ trend
+  - "Apr → May"
 
-  Font Awesome is used where the design implies a functional icon with no drawn precedent: search, close, settings, show/hide, chevrons in new UI, and states that are not designed yet. *(See open question Q3.)*
+  Brand and data-visualization marks stay CSS, because they are not icons: the brand mark, mood dots and diamonds. Keyboard symbols (⌘K, ⇧Q) stay text.
 
 ### 3.5 Environment
 - **`.env.example`** (committed, no values):
@@ -586,17 +585,36 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - Positions match to within 0.5px, down to the page height.
   - The only intended difference is the y labels, which now sit on their gridlines (§8 #3).
 
-### Phase 9: Year review
-- [ ] Year selector (partial years flagged).
-- [ ] Hero.
-- [ ] Weekly arc chart with best/hardest month highlights, hover tooltip and journey lanes.
-- [ ] Six superlatives.
-- [ ] Month-by-month hairline grid.
-- [ ] Moments worth keeping.
-- [ ] Tags and journeys columns.
-- [ ] Templated reflection. This is deterministic text from data; AI may replace it later.
+### Phase 9: Year review ✅
+- [x] **Logic** (`utils/analytics/review.ts`, tested), ported from the design's Year Review script:
+  - Years with check-ins: the last complete one by default; partial years flagged ("March to December", "January to today").
+  - Weekly averages for the arc, with each week's most telling note. Month stats include daily averages and spread.
+  - Best, hardest and most stable month (≥ 20 check-ins). "More #tag than usual" by lift against the year, leaving out the everyday tags Work and Caffeine, as the design does.
+  - Superlatives: best, most difficult and most stable month; most common mood; biggest positive change; longest journey.
+  - Moments worth keeping: the three highest and two lowest notes, with their journey day and tags. Top tags against the yearly average. Journeys and lanes.
+  - Templated reflection; the arc title comes from the first and last two recorded months.
+- [x] **Page** (`pages/review/[[year]].vue` and `ReviewView`):
+  - `/review` shows the default year; `/review/2025` a given year; years without check-ins return 404. The server sends only the computed model.
+  - `YearArcChart`: its own SVG (gradient line, area, best/hardest month bands, month lines, average), Best/Hardest callouts, a crosshair hover per week with tooltip, month labels, and journey lanes.
+  - The hero (300-weight year, counts), superlatives, month grid with daily bars, moments, tag and journey lists, and the reflection.
+  - A year with no check-ins shows the hero and one line.
+- [x] **Newsreader** now loads with its optical-size axis (`opsz 6..72`), as the design does. Without it, large italic quotes were about 5% wider and wrapped differently (found on this page; it applies everywhere Newsreader is used).
+- [x] **Q answers applied:**
+  - the wordmark is now "Ascent" (Q1)
+  - every CSS and text glyph is a Font Awesome icon (Q3, §3.4)
+- **Verified** against the running design with the design's own seeded data (2025, "today" 5 Oct 2026) at 1280px and 375px:
+  - Every computed number and sentence is identical, apart from §8 #29–31.
+  - Every position matches to within 0.5px, including the week hover's crosshair, dot and tooltip.
 
-### Phase 10+: AI (behind the scenes, never a chat UI)
+### Phase 10: Settings (next)
+The design has no Settings page, so it will be extrapolated in the established style (Q6). Scope to agree before building:
+- [ ] **Profile:** display name and timezone (today the timezone follows the browser automatically).
+- [ ] **Account:** email, change password, sign out of other devices.
+- [ ] **Your data:** export everything (check-ins, notes, journal, journeys) and delete the account. The signup page already promises both, so they must exist before public launch.
+- [ ] **Tags:** the default tag list and the user's own tags, once tag management is designed.
+- [ ] `,` already opens `/settings` (currently a placeholder page).
+
+### Phase 11+: AI (behind the scenes, never a chat UI)
 - Server routes in `server/api/ai/*`, with keys server-side only. Uses: rule parsing, checkpoint expectations, period summaries, the year reflection, and notices.
 - **Wording requirements:**
   - Always hedged ("you may notice", "some people experience").
@@ -604,7 +622,7 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - Every suggestion is editable and must be confirmed by the user.
 - **Caching:** AI results are cached in a table so pages don't call the model on every render.
 
-**Explicitly deferred until designed or requested:** Settings, ⌘K search palette, data export and delete (promised in the signup copy, so it must exist before public launch), notifications, and Pro icons.
+**Explicitly deferred until designed or requested:** ⌘K search palette (Q5: it opens the Journal search for now), notifications. Data export and delete are part of Phase 10.
 
 ---
 
@@ -612,7 +630,7 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 
 | # | Observation | Proposed handling |
 |---|---|---|
-| 1 | Brand in the design is **"baseline"**; the repo is **Ascent**. | Keep the design's wordmark until told otherwise, behind one constant (`APP_NAME`). **Q1** |
+| 1 | Brand in the design is **"baseline"**; the repo is **Ascent**. | **Ascent** (Q1), set once in `app.config.ts` (`appName`). |
 | 2 | The journey detail uses its own greys: `#8E8C88`, `#737373`, `rgba(59,59,59,.6)` dividers. Other pages use `#8F8D88` and white-alpha hairlines. | Keep them as journey-scoped tokens (faithful), unless you prefer unifying. **Q2** |
 | 3 | Insights Y-axis labels are placed at fixed percentages that don't match the gridlines. | Derived from the same scale as the gridlines (done in phase 8). |
 | 4 | The Year review sidebar shortcut colour is not highlighted when active, unlike other pages. | Use the consistent active style. |
@@ -640,15 +658,19 @@ Each phase ends with the same verification: **side-by-side comparison with the d
 | 26 | On mobile the floor column stays sticky while the content wraps below it, so it would cover the sections as you scroll. | Sticky on desktop only. |
 | 27 | "Often reported vs Your entries" is designed for nicotine only (cravings, focus, sleep). | Other journeys show mood vs before, the lowest time of day and sleep, in the same hedged wording. |
 | 28 | Today's observation is fixed copy about the nicotine journey. | The strongest Insights notice from the last 30 days, with its entry count and "a pattern, not a proven cause". |
+| 29 | The year reflection always ends "That gap stayed fairly consistent, and it's one of the steadiest patterns in your data", which isn't checked. | Only the measured evening/morning averages are stated. |
+| 30 | The year subtitle lower-cases months and says "so far" for a finished year ("Your year so far, march to december."). | "Your year so far, January to today." for the current year; "Your year, March to December." for a partial past one. |
+| 31 | "Longest journey" repeats the status label's first part ("12 days · Day 12" for a running one). | Days plus a status word: Completed, Still going, Ended with a setback, Paused. |
 
 ---
 
 ## 9. Open questions (with the default we'll use if unanswered)
 
-1. **Name:** is the product "baseline" (as in the design) or "Ascent"? *Default: show "baseline" via a single constant.*
-2. **Journey greys:** keep the journey-detail palette exactly as designed, or unify with the rest? *Default: keep exactly.*
-3. **Icons:** should the CSS-drawn glyphs (bottom-nav icons, text arrows ← → × ✓) stay as designed, or be replaced by Font Awesome equivalents? *Default: keep the design's glyphs, and use FA for new or functional icons.*
-4. **OAuth:** ~~Google and Apple~~ **Resolved:** Google only; Apple removed.
-5. **⌘K "Search entries":** build the palette (undesigned), or route to the Journal search for now? *Default: route to `/journal` with the search focused.*
-6. **Setback flow and Settings** are not designed. Is it OK to extrapolate from the established style when we reach them? *Default: yes, minimal and in-style.*
-7. **Timezone:** use the browser timezone stored on the profile for day boundaries? *Default: yes.*
+All answered:
+1. **Name:** **Ascent.** "baseline" was a placeholder in the design.
+2. **Journey greys:** kept exactly as designed.
+3. **Icons:** **Font Awesome** replaces the CSS and text glyphs (§3.4); brand and data marks stay CSS.
+4. **OAuth:** Google only; Apple removed.
+5. **⌘K "Search entries":** stays as is, opening the Journal with the search focused.
+6. **Setback flow and Settings:** extrapolated in-style. The setback flow is done (phase 7); Settings is Phase 10, the next step.
+7. **Timezone:** yes, the browser timezone stored on the profile.

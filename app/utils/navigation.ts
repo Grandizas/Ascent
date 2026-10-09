@@ -1,4 +1,4 @@
-export type MobileGlyph = 'today' | 'timeline' | 'journeys' | 'insights' | 'journal'
+import type { IconName } from '~/utils/icons'
 
 export interface NavItem {
   label: string
@@ -6,15 +6,15 @@ export interface NavItem {
   /** Global keyboard shortcut, shown as a keycap in the sidebar. */
   shortcut: string
   /** Present when the item also appears in the mobile tab bar. */
-  mobileGlyph?: MobileGlyph
+  mobileIcon?: IconName
 }
 
 export const PRIMARY_NAV: readonly NavItem[] = [
-  { label: 'Today', to: '/', shortcut: 'T', mobileGlyph: 'today' },
-  { label: 'Timeline', to: '/timeline', shortcut: 'L', mobileGlyph: 'timeline' },
-  { label: 'Journeys', to: '/journeys', shortcut: 'J', mobileGlyph: 'journeys' },
-  { label: 'Insights', to: '/insights', shortcut: 'I', mobileGlyph: 'insights' },
-  { label: 'Journal', to: '/journal', shortcut: 'E', mobileGlyph: 'journal' },
+  { label: 'Today', to: '/', shortcut: 'T', mobileIcon: 'tab-today' },
+  { label: 'Timeline', to: '/timeline', shortcut: 'L', mobileIcon: 'tab-timeline' },
+  { label: 'Journeys', to: '/journeys', shortcut: 'J', mobileIcon: 'tab-journeys' },
+  { label: 'Insights', to: '/insights', shortcut: 'I', mobileIcon: 'tab-insights' },
+  { label: 'Journal', to: '/journal', shortcut: 'E', mobileIcon: 'tab-journal' },
   { label: 'Year review', to: '/review', shortcut: 'R' },
 ]
 

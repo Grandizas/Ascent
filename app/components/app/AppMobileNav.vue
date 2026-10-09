@@ -2,7 +2,7 @@
 import { isNavActive, PRIMARY_NAV } from '~/utils/navigation'
 
 const route = useRoute()
-const tabs = PRIMARY_NAV.filter(item => item.mobileGlyph)
+const tabs = PRIMARY_NAV.filter(item => item.mobileIcon)
 
 // Journey detail pages still belong to the Journeys tab on mobile.
 function isActive(to: string) {
@@ -23,12 +23,11 @@ function isActive(to: string) {
       :class="{ 'is-active': isActive(tab.to) }"
       :aria-current="isActive(tab.to) ? 'page' : undefined"
     >
-      <!-- Glyphs are drawn in CSS, as in the design. -->
       <span
         class="mobile-nav__icon"
-        aria-hidden="true"
+        :class="{ 'is-today': tab.to === '/' }"
       >
-        <span :class="`mobile-nav__glyph mobile-nav__glyph--${tab.mobileGlyph}`" />
+        <AppIcon :name="tab.mobileIcon!" />
       </span>
       {{ tab.label }}
     </NuxtLink>

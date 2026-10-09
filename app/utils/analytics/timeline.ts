@@ -142,6 +142,8 @@ export interface StatCell {
   sub: string
   /** Colours the sub line (the average's change). */
   tone?: 'positive' | 'negative' | 'muted'
+  /** Direction of the change, drawn as an arrow before the sub line. */
+  trend?: 'up' | 'down'
 }
 
 export function timelineStats(
@@ -154,10 +156,10 @@ export function timelineStats(
   const summary = summarizeScores(entries.map(e => e.score))
   const previousAverage = previous ? summarizeScores(previous.map(e => e.score)).average : null
 
-  let averageSub: Pick<StatCell, 'sub' | 'tone'> = { sub: '', tone: 'muted' }
+  let averageSub: Pick<StatCell, 'sub' | 'tone' | 'trend'> = { sub: '', tone: 'muted' }
   if (summary.average != null && previousAverage != null) {
     const delta = summary.average - previousAverage
-    averageSub = { sub: `${delta >= 0 ? '↑' : '↓'} ${Math.abs(delta).toFixed(1)} vs previous`, tone: delta >= 0 ? 'positive' : 'negative' }
+    averageSub = { sub: `${Math.abs(delta).toFixed(1)} vs previous`, tone: delta >= 0 ? 'positive' : 'negative', trend: delta >= 0 ? 'up' : 'down' }
   }
   else if (summary.average != null && period.range !== 'all') {
     averageSub = { sub: 'Nothing earlier to compare', tone: 'muted' }

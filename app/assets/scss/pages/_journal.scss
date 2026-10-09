@@ -93,14 +93,10 @@
   }
 }
 
-// The design's drawn magnifier: a small ring.
 .journal-search__glyph {
   flex-shrink: 0;
-  box-sizing: content-box;
-  width: 9px;
-  height: 9px;
-  border: 1.5px solid $color-text-dim;
-  border-radius: 50%;
+  font-size: 12px;
+  color: $color-text-dim;
 }
 
 .journal-search__input {

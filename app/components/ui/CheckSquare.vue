@@ -27,9 +27,9 @@ function toggle() {
     :title="title"
     @click="toggle"
   >
-    <span
+    <AppIcon
       v-if="checked"
-      aria-hidden="true"
-    >✓</span>
+      name="check"
+    />
   </button>
 </template>

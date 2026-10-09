@@ -103,60 +103,11 @@
   align-items: center;
   justify-content: center;
   height: 14px;
+  font-size: 14px;
 }
 
-// Glyphs are drawn with borders/shadows in currentColor, exactly as in the design.
-.mobile-nav__glyph {
-  display: block;
-  box-sizing: border-box;
+// Today's icon takes the accent while its tab is active (as the design's ring did).
+.mobile-nav__tab.is-active .mobile-nav__icon.is-today {
+  color: $color-accent;
 }
 
-.mobile-nav__glyph--today {
-  width: 12px;
-  height: 12px;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
-
-  .is-active & {
-    border-color: $color-accent;
-  }
-}
-
-.mobile-nav__glyph--timeline {
-  width: 16px;
-  height: 10px;
-  border-bottom: 1.5px solid currentColor;
-  border-left: 1.5px solid currentColor;
-}
-
-.mobile-nav__glyph--journeys {
-  width: 10px;
-  height: 10px;
-  border: 1.5px solid currentColor;
-  transform: rotate(45deg);
-}
-
-.mobile-nav__glyph--insights {
-  width: 4px;
-  height: 12px;
-  background: currentColor;
-  box-shadow: 6px 3px 0 currentColor, -6px 5px 0 currentColor;
-}
-
-.mobile-nav__glyph--journal {
-  position: relative;
-  width: 14px;
-  height: 10px;
-  border-top: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 3px;
-    top: 3px;
-    height: 1.5px;
-    background: currentColor;
-  }
-}
