@@ -250,21 +250,27 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          tags: string[] | null
           timezone: string
+          timezone_auto: boolean
           updated_at: string
         }
         Insert: {
           created_at?: string
           display_name?: string
           id: string
+          tags?: string[] | null
           timezone?: string
+          timezone_auto?: boolean
           updated_at?: string
         }
         Update: {
           created_at?: string
           display_name?: string
           id?: string
+          tags?: string[] | null
           timezone?: string
+          timezone_auto?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -286,6 +292,8 @@ export type Database = {
         }
         Returns: string
       }
+      delete_account: { Args: never, Returns: undefined }
+      is_valid_tag_list: { Args: { tags: string[] }, Returns: boolean }
       is_valid_timezone: { Args: { tz: string }, Returns: boolean }
       journal_feed: {
         Args: {

@@ -17,16 +17,11 @@ $page-widths: (
   insights: $page-width-insights,
   review: $page-width-review,
   journey: $page-width-journey,
+  settings: $page-width-settings,
 );
 
 @each $name, $width in $page-widths {
   .page--#{$name} {
     max-width: $width;
   }
-}
-
-// Shown on routes whose design is not built yet.
-.page-placeholder {
-  font-size: 13px;
-  color: $color-text-ghost;
 }

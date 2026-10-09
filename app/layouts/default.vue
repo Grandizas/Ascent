@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { browserTimeZone } from '~/composables/useTimezone'
 import { PRIMARY_NAV, SETTINGS_NAV } from '~/utils/navigation'
 
 const { profile, load, update } = useProfile()
@@ -10,11 +11,16 @@ await Promise.all([
   useAsyncData('journeys', () => loadJourneys()),
 ])
 
-// Keep the stored timezone in step with the browser (first visit, travel), so
-// server-side analytics agree with what the user sees.
+// A zone picked in Settings wins over the browser's. Pages render after this,
+// so every "today" on the server and client uses it.
+const timeZone = useTimezone()
+if (profile.value && !profile.value.timezoneAuto) timeZone.value = profile.value.timezone
+
+// Otherwise keep the stored timezone in step with the browser (first visit,
+// travel), so server-side analytics agree with what the user sees.
 onMounted(() => {
-  const browserZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  if (profile.value && browserZone && profile.value.timezone !== browserZone) {
+  const browserZone = browserTimeZone()
+  if (profile.value?.timezoneAuto && browserZone && profile.value.timezone !== browserZone) {
     update({ timezone: browserZone }).catch(error => console.error('[profile] timezone sync failed', error))
   }
 })

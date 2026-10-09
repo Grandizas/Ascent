@@ -9,8 +9,9 @@ const props = withDefaults(defineProps<{
    * ghost — text only (Edit rules)
    * sage — journey call to action (Begin at Floor I)
    * icon — square hairline (period arrows)
+   * danger — muted red hairline (Delete account; not in the design)
    */
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'sage' | 'icon'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'sage' | 'icon' | 'danger'
   /** Heights from the design: xs 28 · sm 30 · md 34 · lg 36 · xl 38 · 2xl 40 · 3xl 44 (auth). */
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
   /** Full width. */

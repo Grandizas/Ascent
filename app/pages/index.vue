@@ -5,13 +5,13 @@ import { insightsModel } from '~/utils/analytics/insights'
 import { summarizeScores } from '~/utils/analytics/stats'
 import { addDays, dayKey, minuteOfDay } from '~/utils/date'
 import { climbingJourneys, removesNicotine } from '~/utils/journey'
-import { DEFAULT_TAGS, type MoodLevel } from '~/utils/mood'
+import type { MoodLevel } from '~/utils/mood'
 
 useHead({ title: 'Today' })
 
 const timeZone = useTimezone()
 const now = useNow()
-const { firstName } = useProfile()
+const { firstName, tagOptions } = useProfile()
 const { entries, loadRecent, syncError, clearSyncError } = useMoodEntries()
 const { current, pulseKey, log, update, undo, done } = useMoodLog()
 
@@ -92,7 +92,7 @@ useHotkeys({
         :current="current"
         :pulse-key="pulseKey"
         :time-zone="timeZone"
-        :tag-options="DEFAULT_TAGS"
+        :tag-options="tagOptions"
         :error="syncError"
         @dismiss-error="clearSyncError"
         @pick="pick"

@@ -131,3 +131,19 @@ $button-sizes: (
     color: $color-disabled;
   }
 }
+
+// Not in the design: irreversible actions (Settings → Delete account).
+.btn--danger {
+  border-color: $color-error-border;
+  color: $color-error-text;
+
+  &:hover:not(:disabled) {
+    border-color: $color-error-text;
+    color: $color-error-form;
+  }
+
+  &:disabled {
+    border-color: $line-strong;
+    color: $color-text-ghost;
+  }
+}

@@ -36,9 +36,8 @@
   }
 }
 
-.mobile-top-bar__sign-out {
-  @include button-reset;
-
+// The design's avatar pill read "Sign out"; it opens Settings now (PLAN.md §8 #32).
+.mobile-top-bar__account {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -51,6 +50,12 @@
 
   &:hover {
     color: $color-text-muted;
+  }
+
+  &.is-active,
+  &.is-active:hover {
+    border-color: $line-hover;
+    color: $color-text;
   }
 
   .avatar {
