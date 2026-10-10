@@ -346,6 +346,7 @@ Child tables carry `user_id` too, which keeps policies simple and fast. Schema c
 | 2. Mood (Phase 3) | `mood_entries(id, user_id, logged_at timestamptz, level smallint 1–5, score smallint 1–10, note text, tags text[], created_at, updated_at)` | `level` is what the user tapped; `score` is the 1–10 intensity (defaults Sad 2, Low 4, Neutral 5, Good 7, Great 9, as in the design). **Tags are a `text[]` on the entry** rather than tag tables: every check-in stays a single atomic write, and analytics use `unnest()`. A per-user `tags` table can be added once tag management is designed. Indexes: `(user_id, logged_at desc)` and GIN on `tags`. |
 | 3. Journal (Phase 5) | `journal_entries(id, user_id, written_at, body)` | The design's "longer entries". Notes on check-ins stay on `mood_entries`. The feed, month totals and tag counts come from the SQL functions `journal_feed`, `journal_months` and `journal_tags`. |
 | 4. Journeys (Phase 6) | `journeys(id, user_id, name, what_text, why_text, why_written_at, length_days, checkpoint_days smallint[], color, created_at)`; `journey_rules(id, journey_id, user_id, kind 'remove'\|'allow', label, suggested bool, position)`; `journey_attempts(id, journey_id, user_id, number, started_at, ended_at, end_reason 'setback'\|'paused'\|'completed'\|null)`. Phase 7 adds `journey_setbacks(id, attempt_id, user_id, occurred_at, note, outcome 'continued'\|'restarted')`. No stored status: an attempt is active until ended or its length has passed. | "A setback is recorded, not reset." **Continue** keeps the attempt running and logs a setback. **Restart** ends the attempt and opens attempt N+1. Previous attempts are always kept. |
+| 5. Settings (Phase 10) | `profiles` gains `timezone_auto bool` and `tags text[]` (null = the default list; checked by `is_valid_tag_list`: ≤ 40 tags, 1–32 chars, trimmed, unique ignoring case). `delete_account()` RPC. | `delete_account` is security definer (auth.users isn't writable by `authenticated`) and only ever deletes `auth.uid()`; every user table cascades from auth.users. Execute is revoked from anon. The Supabase advisor flags it (lint 0029) by design. |
 | Later | `ai_insights` cache, if AI summaries are added | Only when the AI phase starts. |
 
 **Not stored:** derived values (daily averages, current day, floor progress, stats). They are computed from entries, initially in TS. If volume demands it later, we add SQL views or RPCs (for example `daily_mood(user, from, to)`).
@@ -606,15 +607,29 @@ Each phase ends with the same verification: **side-by-side comparison with the d
   - Every computed number and sentence is identical, apart from §8 #29–31.
   - Every position matches to within 0.5px, including the week hover's crosshair, dot and tooltip.
 
-### Phase 10: Settings (next)
-The design has no Settings page, so it will be extrapolated in the established style (Q6). Scope to agree before building:
-- [ ] **Profile:** display name and timezone (today the timezone follows the browser automatically).
-- [ ] **Account:** email, change password, sign out of other devices.
-- [ ] **Your data:** export everything (check-ins, notes, journal, journeys) and delete the account. The signup page already promises both, so they must exist before public launch.
-- [ ] **Tags:** the default tag list and the user's own tags, once tag management is designed.
-- [ ] `,` already opens `/settings` (currently a placeholder page).
+### Phase 10: Settings ✅
+The design has no Settings page, so it is extrapolated in the established style (Q6): a page header, then sections with a mono label and serif title over a card of hairline-separated rows (text left, control right; stacked on phones). `/settings`, opened with `,`.
+- [x] **Profile** (`ProfileSettings`):
+  - Name, saved with its own button.
+  - Timezone: "Follow this device" (the default; the layout keeps the profile in step with the browser, as before) or "Choose one" from every IANA zone, labelled with its current offset. A chosen zone wins over the browser's on server and client, and stays put while travelling (`profiles.timezone_auto`).
+- [x] **Tags** (`TagSettings`): the tags Today offers, in order. Add (trimmed, ≤ 32 characters, no case-insensitive duplicates, ≤ 40), remove, reset to defaults. Past check-ins keep removed tags; the default list is stored as null so it can evolve.
+- [x] **Account** (`AccountSettings`):
+  - Email change through Supabase's confirmation link (back to `/settings` via `/confirm`); a pending change is shown until confirmed.
+  - Password change, or "Set a password" for Google-only accounts. If the project requires reauthentication, Supabase emails a code and the form asks for it.
+  - Sign out of other devices (`scope: 'others'`), and Sign out.
+- [x] **Your data** (`DataSettings`):
+  - Export everything as one JSON file (profile, check-ins, journal, journeys with rules, attempts and setbacks), or check-ins only as CSV (local date and time, mood, intensity, tags, note; formula-safe cells, UTF-8 BOM). Runs in the browser with the user's own session, paged past Supabase's 1,000-row limit, so RLS bounds what it can read.
+  - Delete account: type "delete" to confirm, then `delete_account()`; the browser session is cleared and `/login` says the account is gone.
+- [x] On phones the top bar's avatar pill opens Settings instead of signing out (§8 #32).
+- **Verified:**
+  - A rolled-back two-user SQL test: deleting user A removed A's user, profile, check-ins and journal, and left B untouched. Calls without a user are refused, anon can't execute it, and invalid tag lists are rejected.
+  - Unit tests: tags, timezones, CSV export, and the auth actions (code flow, email errors, delete success and failure).
+  - The page was checked with a temporary signed-out page at 1280px and 375px: layout, no horizontal scroll, no hydration warnings, and validation and save-failure messages.
+- **Dashboard settings to check** (not in code):
+  - Supabase Auth → enable leaked-password protection (advisor warning).
+  - Confirm the "Secure email change" preference; with it on, both addresses must confirm.
 
-### Phase 11+: AI (behind the scenes, never a chat UI)
+### Phase 11+: AI (next; behind the scenes, never a chat UI)
 - Server routes in `server/api/ai/*`, with keys server-side only. Uses: rule parsing, checkpoint expectations, period summaries, the year reflection, and notices.
 - **Wording requirements:**
   - Always hedged ("you may notice", "some people experience").
@@ -622,7 +637,7 @@ The design has no Settings page, so it will be extrapolated in the established s
   - Every suggestion is editable and must be confirmed by the user.
 - **Caching:** AI results are cached in a table so pages don't call the model on every render.
 
-**Explicitly deferred until designed or requested:** ⌘K search palette (Q5: it opens the Journal search for now), notifications. Data export and delete are part of Phase 10.
+**Explicitly deferred until designed or requested:** ⌘K search palette (Q5: it opens the Journal search for now), notifications, tag renaming (it would need rewriting past check-ins).
 
 ---
 
@@ -661,6 +676,7 @@ The design has no Settings page, so it will be extrapolated in the established s
 | 29 | The year reflection always ends "That gap stayed fairly consistent, and it's one of the steadiest patterns in your data", which isn't checked. | Only the measured evening/morning averages are stated. |
 | 30 | The year subtitle lower-cases months and says "so far" for a finished year ("Your year so far, march to december."). | "Your year so far, January to today." for the current year; "Your year, March to December." for a partial past one. |
 | 31 | "Longest journey" repeats the status label's first part ("12 days · Day 12" for a running one). | Days plus a status word: Completed, Still going, Ended with a setback, Paused. |
+| 32 | On phones the avatar pill in the top bar reads "Sign out", and nothing else reaches Settings. | The pill reads "Settings" and opens it; Sign out lives in Settings (Account → This device). |
 
 ---
 
@@ -672,5 +688,5 @@ All answered:
 3. **Icons:** **Font Awesome** replaces the CSS and text glyphs (§3.4); brand and data marks stay CSS.
 4. **OAuth:** Google only; Apple removed.
 5. **⌘K "Search entries":** stays as is, opening the Journal with the search focused.
-6. **Setback flow and Settings:** extrapolated in-style. The setback flow is done (phase 7); Settings is Phase 10, the next step.
-7. **Timezone:** yes, the browser timezone stored on the profile.
+6. **Setback flow and Settings:** extrapolated in-style. The setback flow is done (phase 7) and Settings is done (phase 10).
+7. **Timezone:** yes, the browser timezone stored on the profile. Settings can also fix one zone (phase 10).

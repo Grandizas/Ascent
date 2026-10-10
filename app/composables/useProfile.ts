@@ -1,5 +1,6 @@
 import { monthShort, zonedParts } from '~/utils/date'
-import type { Profile } from '~/types/profile'
+import { DEFAULT_TAGS } from '~/utils/mood'
+import type { Profile, ProfilePatch } from '~/types/profile'
 
 /** The signed-in user's profile (shared state). Loaded by the default layout. */
 export function useProfile() {
@@ -15,7 +16,7 @@ export function useProfile() {
     }
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, display_name, timezone, created_at')
+      .select('id, display_name, timezone, timezone_auto, tags, created_at')
       .eq('id', id)
       .single()
     if (error) throw error
@@ -23,20 +24,31 @@ export function useProfile() {
       id: data.id,
       displayName: data.display_name,
       timezone: data.timezone,
+      timezoneAuto: data.timezone_auto,
+      tags: data.tags,
       createdAt: data.created_at,
     }
     return profile.value
   }
 
-  async function update(patch: { displayName?: string, timezone?: string }) {
+  /** Saves the given fields; fields left out (undefined) are untouched, `tags: null` resets them. */
+  async function update(patch: ProfilePatch) {
     if (!profile.value) return
     const { error } = await supabase
       .from('profiles')
-      .update({ display_name: patch.displayName, timezone: patch.timezone })
+      .update({
+        display_name: patch.displayName,
+        timezone: patch.timezone,
+        timezone_auto: patch.timezoneAuto,
+        tags: patch.tags,
+      })
       .eq('id', profile.value.id)
     if (error) throw error
     profile.value = { ...profile.value, ...patch }
   }
+
+  /** Tags offered when logging a mood. */
+  const tagOptions = computed<readonly string[]>(() => profile.value?.tags ?? DEFAULT_TAGS)
 
   const displayName = computed(() => profile.value?.displayName ?? '')
   const firstName = computed(() => displayName.value.split(/\s+/)[0] ?? '')
@@ -56,5 +68,5 @@ export function useProfile() {
     return `Since ${monthShort(month)} ${year}`
   })
 
-  return { profile, load, update, displayName, firstName, initials, memberSinceLabel }
+  return { profile, load, update, tagOptions, displayName, firstName, initials, memberSinceLabel }
 }

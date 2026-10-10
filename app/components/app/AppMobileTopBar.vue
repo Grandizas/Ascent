@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
 const { initials } = useProfile()
-const { signOut } = useAuth()
 </script>
 
 <template>
@@ -15,17 +14,18 @@ const { signOut } = useAuth()
       >
         Year review
       </NuxtLink>
-      <button
-        type="button"
-        class="mobile-top-bar__sign-out"
-        @click="signOut"
+      <!-- Settings holds Sign out on phones (PLAN.md §8 #32). -->
+      <NuxtLink
+        to="/settings"
+        class="mobile-top-bar__account"
+        :class="{ 'is-active': route.path === '/settings' }"
       >
         <AppAvatar
           :initials="initials"
           size="sm"
         />
-        Sign out
-      </button>
+        Settings
+      </NuxtLink>
     </div>
   </div>
 </template>

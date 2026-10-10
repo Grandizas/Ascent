@@ -7,6 +7,8 @@ useHead({ title: 'Log in' })
 
 const { signIn, signInWithProvider } = useAuth()
 const redirect = useSupabaseCookieRedirect()
+// Settings sends people here after deleting their account.
+const deleted = useRoute().query.deleted === '1'
 
 const email = ref('')
 const password = ref('')
@@ -43,6 +45,13 @@ async function oauth(provider: OAuthProvider) {
 <template>
   <div class="auth-page">
     <AuthIntro
+      v-if="deleted"
+      eyebrow="Account deleted"
+      title="Your account is gone."
+      description="Your check-ins, notes and journeys were deleted with it. You’re welcome back any time."
+    />
+    <AuthIntro
+      v-else
       eyebrow="Log in"
       title="Welcome back."
       description="Pick up where you left off. Your timeline and journeys are waiting."

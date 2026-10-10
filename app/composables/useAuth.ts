@@ -88,6 +88,67 @@ export function useAuth() {
     }, {})
   }
 
+  /**
+   * Settings: changes the password of the signed-in user. When the project
+   * asks for reauthentication (secure password change), Supabase emails a
+   * code; `needsCode` is then true and the call is repeated with `nonce`.
+   */
+  function changePassword(password: string, nonce?: string): Promise<AuthResult & { needsCode: boolean }> {
+    return guarded(async () => {
+      const { error } = await supabase.auth.updateUser({ password, nonce: nonce?.trim() || undefined })
+      if (error?.code === 'reauthentication_needed') {
+        const sent = await supabase.auth.reauthenticate()
+        return { error: sent.error && describe(sent.error, 'update-password'), needsCode: !sent.error }
+      }
+      return { error: error && describe(error, 'update-password'), needsCode: false }
+    }, { needsCode: false })
+  }
+
+  /** Starts an email change; it takes effect once the link Supabase sends is opened. */
+  function changeEmail(email: string): Promise<AuthResult> {
+    return guarded(async () => {
+      const { error } = await supabase.auth.updateUser({ email: email.trim() }, { emailRedirectTo: callbackUrl('/settings') })
+      return { error: error && describe(error, 'change-email') }
+    }, {})
+  }
+
+  /** The new address waiting for confirmation, if an email change is pending. */
+  async function pendingEmail(): Promise<string | null> {
+    try {
+      const { data } = await supabase.auth.getUser()
+      return data.user?.new_email || null
+    }
+    catch {
+      return null
+    }
+  }
+
+  /** Ends every session except this browser's. */
+  function signOutOtherDevices(): Promise<AuthResult> {
+    return guarded(async () => {
+      const { error } = await supabase.auth.signOut({ scope: 'others' })
+      return { error: error && describe(error, 'sessions') }
+    }, {})
+  }
+
+  /**
+   * Deletes the account and everything in it (the delete_account RPC), then
+   * clears this browser's session and leaves for /login.
+   */
+  function deleteAccount(): Promise<AuthResult> {
+    return guarded(async () => {
+      const { error } = await supabase.rpc('delete_account')
+      if (error) {
+        console.error('[auth] delete account failed', error)
+        return { error: 'We couldn’t delete your account. Nothing was removed. Try again in a moment.' }
+      }
+      // The user no longer exists, so the server may reject the sign-out; the local session goes either way.
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+      await reloadNuxtApp({ path: '/login?deleted=1', force: true })
+      return { error: null }
+    }, {})
+  }
+
   /** True once this browser no longer holds a session. */
   async function sessionCleared(): Promise<boolean> {
     try {
@@ -124,7 +185,19 @@ export function useAuth() {
     return { error }
   }
 
-  return { signIn, signUp, signInWithProvider, requestPasswordReset, updatePassword, signOut }
+  return {
+    signIn,
+    signUp,
+    signInWithProvider,
+    requestPasswordReset,
+    updatePassword,
+    changePassword,
+    changeEmail,
+    pendingEmail,
+    signOutOtherDevices,
+    deleteAccount,
+    signOut,
+  }
 }
 
 /** Only allow same-app paths as post-auth destinations. */
@@ -136,9 +209,17 @@ function isRateLimit(error: AuthError) {
   return error.status === 429 || /rate.?limit/i.test(error.code ?? '')
 }
 
-function describe(error: AuthError, action: 'sign-in' | 'sign-up' | 'oauth' | 'reset' | 'update-password'): string {
+type AuthAction = 'sign-in' | 'sign-up' | 'oauth' | 'reset' | 'update-password' | 'change-email' | 'sessions'
+
+function describe(error: AuthError, action: AuthAction): string {
   if (isRateLimit(error)) return 'Too many attempts. Wait a minute and try again.'
+  if (action === 'change-email') {
+    if (error.code === 'email_exists' || error.code === 'user_already_exists') return 'There’s already an account for that email.'
+    if (error.code === 'email_address_invalid' || error.code === 'validation_failed') return 'Enter a valid email address.'
+  }
   switch (error.code) {
+    case 'reauthentication_not_valid':
+      return 'That code didn’t work. Use the one in the latest email.'
     case 'invalid_credentials':
       return 'That email and password don’t match. Try again or reset it.'
     case 'email_not_confirmed':
@@ -156,5 +237,6 @@ function describe(error: AuthError, action: 'sign-in' | 'sign-up' | 'oauth' | 'r
   }
   if (action === 'oauth') return 'That sign-in option isn’t available right now. Use your email instead.'
   if (action === 'reset') return 'We couldn’t send the reset email. Try again in a moment.'
+  if (action === 'change-email') return 'We couldn’t send the confirmation email. Try again in a moment.'
   return GENERIC_ERROR
 }
