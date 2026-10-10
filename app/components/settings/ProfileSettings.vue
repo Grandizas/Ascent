@@ -28,9 +28,12 @@ async function saveName() {
     nameError.value = 'Enter a name. A nickname is fine.'
     return
   }
+  const submitted = name.value
   savingName.value = true
   try {
     await update({ displayName: value })
+    // The field stays editable while saving; keep anything typed meanwhile.
+    if (name.value !== submitted) return
     name.value = value
     await nextTick() // let the watcher clear old messages first
     nameStatus.value = 'Saved.'
@@ -62,7 +65,7 @@ onMounted(() => (allZones.value = timeZoneOptions(new Date(), [timeZone.value, '
 const zoneOptions = computed(() =>
   allZones.value.length ? allZones.value : [{ value: timeZone.value, label: timeZoneLabel(timeZone.value, new Date(now.value)) }])
 
-async function saveZone(timezone: string, timezoneAuto: boolean) {
+async function saveZone(timezone: string, timezoneAuto: boolean): Promise<boolean> {
   savingZone.value = true
   zoneStatus.value = null
   zoneError.value = null
@@ -72,10 +75,12 @@ async function saveZone(timezone: string, timezoneAuto: boolean) {
     zoneStatus.value = timezoneAuto
       ? 'Saved. Your timezone follows whichever device you use.'
       : `Saved. Your days now start at midnight in ${timeZoneName(timezone)}.`
+    return true
   }
   catch (error) {
     console.error('[settings] timezone save failed', error)
     zoneError.value = 'Couldn’t save your timezone. Try again.'
+    return false
   }
   finally {
     savingZone.value = false
@@ -91,9 +96,12 @@ const mode = computed<ZoneMode>({
   },
 })
 
-function pickZone(event: Event) {
-  const zone = (event.target as HTMLSelectElement).value
-  if (zone !== timeZone.value) saveZone(zone, false)
+async function pickZone(event: Event) {
+  const select = event.target as HTMLSelectElement
+  if (select.value === timeZone.value) return
+  // On failure the bound value hasn't changed, so Vue won't reset the
+  // select; do it here so picking the same zone again retries.
+  if (!(await saveZone(select.value, false))) select.value = timeZone.value
 }
 
 const zoneId = useId()

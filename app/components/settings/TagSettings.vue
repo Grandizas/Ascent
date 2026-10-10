@@ -33,13 +33,16 @@ async function save(tags: readonly string[], message: string): Promise<boolean> 
 }
 
 async function add() {
-  const result = addTag(tagOptions.value, draft.value)
+  if (saving.value) return
+  const submitted = draft.value
+  const result = addTag(tagOptions.value, submitted)
   if (result.error) {
     error.value = result.error
     return
   }
   const tag = result.tags.at(-1)!
-  if (await save(result.tags, `Added “${tag}”.`)) draft.value = ''
+  // The field stays editable while saving; only clear it if nothing new was typed.
+  if (await save(result.tags, `Added “${tag}”.`) && draft.value === submitted) draft.value = ''
 }
 
 function remove(tag: string) {
