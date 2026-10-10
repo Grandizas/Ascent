@@ -1,11 +1,12 @@
 @use '../abstracts' as *;
 
-// Page content column. Each page has its own max-width in the design.
+// Page content column, centred in the main area. Each page has its own max-width.
 .page {
   display: flex;
   flex-direction: column;
   gap: 36px;
   min-width: 0;
+  margin-inline: auto;
 }
 
 $page-widths: (

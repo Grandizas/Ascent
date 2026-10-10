@@ -73,11 +73,24 @@ $sage-fill: rgba(150, 170, 116, 0.25);
   }
 }
 
+// A zero-width box centred under the dot, so the text overflows it evenly —
+// except at the ends, where it hangs inward and stays inside the track.
 .checkpoint-track__label {
+  display: flex;
+  justify-content: center;
+  width: 0;
   font-family: $font-mono;
   font-size: 10.5px;
   white-space: nowrap;
   color: $color-text-ghost;
+
+  .is-start & {
+    justify-content: flex-start;
+  }
+
+  .is-end & {
+    justify-content: flex-end;
+  }
 
   .is-reached & {
     color: $color-text-muted;

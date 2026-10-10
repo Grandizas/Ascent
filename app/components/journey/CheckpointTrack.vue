@@ -27,7 +27,7 @@ const description = computed(() => {
       v-for="floor in track.floors"
       :key="floor.day"
       class="checkpoint-track__floor"
-      :class="`is-${floor.state}`"
+      :class="[`is-${floor.state}`, { 'is-start': floor.x === 0, 'is-end': floor.x === 1 }]"
       :style="{ left: percent(floor.x) }"
     >
       <span class="checkpoint-track__dot" />

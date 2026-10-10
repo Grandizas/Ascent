@@ -114,15 +114,16 @@ $sidebar-width: 232px;
 $main-padding: 30px 44px 72px;
 $main-padding-mobile: 18px 16px 108px; // bottom leaves room for the fixed tab bar
 
-$page-width-today: 920px;
-$page-width-timeline: 1180px;
-$page-width-journal: 860px;
-$page-width-journeys: 900px;
-$page-width-wizard: 760px;
-$page-width-insights: 880px;
-$page-width-review: 960px;
-$page-width-journey: 1240px;
-$page-width-settings: 760px; // not in the design; the wizard's width
+// Wider than the design's columns, so large screens aren't mostly empty.
+$page-width-today: 1120px;
+$page-width-timeline: 1400px;
+$page-width-journal: 1040px;
+$page-width-journeys: 1120px;
+$page-width-wizard: 920px;
+$page-width-insights: 1080px;
+$page-width-review: 1160px;
+$page-width-journey: 1400px;
+$page-width-settings: 920px; // not in the design; the wizard's width
 
 $z-tooltip: 5;
 $z-mobile-nav: 50;
